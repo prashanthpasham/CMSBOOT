@@ -1,8 +1,9 @@
 package com.prashanth.dao;
 
+import java.util.Optional;
+
 import org.springframework.data.repository.CrudRepository;
 
 import com.prashanth.model.Address;
-public interface ManagementInfoDaoIntf extends CrudRepository<Address,Long> {
 
-}
+public class ManagementDaoImpl  {}
