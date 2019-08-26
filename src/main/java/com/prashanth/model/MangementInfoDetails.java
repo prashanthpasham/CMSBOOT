@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Table(name = "Management_Info_Details")
 @Entity
@@ -59,8 +60,12 @@ public class MangementInfoDetails {
 		this.logo = logo;
 	}
 
-	@JoinColumn(name = "ADDRESS_ID")
-	@ManyToOne(fetch = FetchType.LAZY, targetEntity = Address.class)
+	/*
+	 * @JoinColumn(name = "ADDRESS_ID")
+	 * 
+	 * @ManyToOne(fetch = FetchType.LAZY, targetEntity = Address.class)
+	 */
+	@Transient
 	public Address getAddress() {
 		return address;
 	}
