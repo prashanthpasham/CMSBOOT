@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication(scanBasePackages = {"com.prashanth.*"})
-//@ComponentScan(basePackages = {"com.prashanth.*"})
+@SpringBootApplication
+@ComponentScan(basePackages = {"com.prashanth.*"})
  @EntityScan(basePackages = {"com.prashanth.model"}) 
 @EnableJpaRepositories(basePackages = {"com.prashanth.dao"})
 public class CmsbootApplication {

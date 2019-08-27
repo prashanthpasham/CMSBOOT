@@ -1,5 +1,8 @@
 package com.prashanth.model;
 
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -8,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -19,7 +23,7 @@ public class MangementInfoDetails {
 	private String name;
 	private String description;
 	private byte[] logo;
-	private Address address;
+	private Set<Address> addressSet;
 
 	@Id
 	@SequenceGenerator(sequenceName = "seq_manage_info", allocationSize = 1, name = "seq_manage_info")
@@ -60,18 +64,14 @@ public class MangementInfoDetails {
 		this.logo = logo;
 	}
 
-	/*
-	 * @JoinColumn(name = "ADDRESS_ID")
-	 * 
-	 * @ManyToOne(fetch = FetchType.LAZY, targetEntity = Address.class)
-	 */
-	@Transient
-	public Address getAddress() {
-		return address;
+	@OneToMany(cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "MANAGE_INFO_ID")
+	public Set<Address> getAddressSet() {
+		return addressSet;
 	}
 
-	public void setAddress(Address address) {
-		this.address = address;
+	public void setAddressSet(Set<Address> addressSet) {
+		this.addressSet = addressSet;
 	}
 
 }

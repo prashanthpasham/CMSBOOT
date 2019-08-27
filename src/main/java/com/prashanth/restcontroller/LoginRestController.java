@@ -1,7 +1,9 @@
 package com.prashanth.restcontroller;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.prashanth.model.Address;
@@ -21,9 +24,9 @@ import com.prashanth.service.ManagementInfoService;
 public class LoginRestController {
 	@Autowired
 	private ManagementInfoService managementInfoService;
-
-	@RequestMapping(name = "/management-info", consumes = "application/json", method = RequestMethod.POST)
-	public void addManagementInfo(@RequestBody String management) {
+	
+	@RequestMapping(value  = "/management-info", consumes = "application/json", method = RequestMethod.POST)
+	public @ResponseBody String addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
 		try {
 			if (management != null) {
@@ -40,7 +43,7 @@ public class LoginRestController {
 					if (object.get("logo") != null) {
 						mid.setLogo(object.get("logo").toString().getBytes());
 					}
-					// List<Address> addressList = new ArrayList<Address>();
+					 Set<Address> addressSet = new HashSet<Address>();
 					if (object.get("address") != null) {
 						JSONArray addresses = (JSONArray) parser.parse(object.get("address").toString());
 						if (addresses.size() > 0) {
@@ -61,9 +64,11 @@ public class LoginRestController {
 									ad1.setPinCode(Integer.parseInt(addr.get("pincode").toString()));
 
 								ad1.setMangementInfoDetails(mid);
-								// addressList.add(ad1);
-								managementInfoService.saveManagementInfoDetails(ad1);
+								addressSet.add(ad1);
+								
 							}
+							mid.setAddressSet(addressSet);
+							String id=managementInfoService.saveManagementInfoDetails(mid);
 							response.put("result", "success");
 							response.put("message", "");
 						}
@@ -77,6 +82,7 @@ public class LoginRestController {
 			response.put("message", e.getMessage());
 			e.printStackTrace();
 		}
+		return response.toJSONString();
 	}
 
 	public ManagementInfoService getManagementInfoService() {
