@@ -24,6 +24,7 @@ public class MangementInfoDetails {
 	private String description;
 	private byte[] logo;
 	private Set<Address> addressSet;
+	private int ownerId;
 
 	@Id
 	@SequenceGenerator(sequenceName = "seq_manage_info", allocationSize = 1, name = "seq_manage_info")
@@ -73,5 +74,12 @@ public class MangementInfoDetails {
 	public void setAddressSet(Set<Address> addressSet) {
 		this.addressSet = addressSet;
 	}
+	@Column(name = "OWNER_ID")
+	public int getOwnerId() {
+		return ownerId;
+	}
 
+	public void setOwnerId(int ownerId) {
+		this.ownerId = ownerId;
+	}
 }

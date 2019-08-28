@@ -24,8 +24,8 @@ import com.prashanth.service.ManagementInfoService;
 public class LoginRestController {
 	@Autowired
 	private ManagementInfoService managementInfoService;
-	
-	@RequestMapping(value  = "/management-info", consumes = "application/json", method = RequestMethod.POST)
+
+	@RequestMapping(value = "/management-info", consumes = "application/json", method = RequestMethod.POST)
 	public @ResponseBody String addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
 		try {
@@ -43,7 +43,9 @@ public class LoginRestController {
 					if (object.get("logo") != null) {
 						mid.setLogo(object.get("logo").toString().getBytes());
 					}
-					 Set<Address> addressSet = new HashSet<Address>();
+					if (object.get("ownerId") != null)
+						mid.setOwnerId(Integer.parseInt(object.get("ownerId").toString()));
+					Set<Address> addressSet = new HashSet<Address>();
 					if (object.get("address") != null) {
 						JSONArray addresses = (JSONArray) parser.parse(object.get("address").toString());
 						if (addresses.size() > 0) {
@@ -65,10 +67,10 @@ public class LoginRestController {
 
 								ad1.setMangementInfoDetails(mid);
 								addressSet.add(ad1);
-								
+
 							}
 							mid.setAddressSet(addressSet);
-							String id=managementInfoService.saveManagementInfoDetails(mid);
+							String id = managementInfoService.saveManagementInfoDetails(mid);
 							response.put("result", "success");
 							response.put("message", "");
 						}

@@ -5,6 +5,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -17,8 +20,10 @@ public class Users {
 	private String password;
 	private String status;
 	private long empId;
-	private long roleId;
+	private Role roleId;
 	private long ownerId;
+	private OrganizationStructure designation;
+	private int reportingUser;
 
 	@Id
 	@SequenceGenerator(sequenceName = "seq_users", allocationSize = 1, name = "seq_users")
@@ -71,12 +76,13 @@ public class Users {
 		this.empId = empId;
 	}
 
-	@Column(name = "ROLE_ID")
-	public long getRoleId() {
+	@ManyToOne
+	@JoinColumn(name = "ROLE_ID")
+	public Role getRoleId() {
 		return roleId;
 	}
 
-	public void setRoleId(long roleId) {
+	public void setRoleId(Role roleId) {
 		this.roleId = roleId;
 	}
 
@@ -87,6 +93,25 @@ public class Users {
 
 	public void setOwnerId(long ownerId) {
 		this.ownerId = ownerId;
+	}
+
+	@OneToOne
+	@JoinColumn(name = "DESIGNATION_ID")
+	public OrganizationStructure getDesignation() {
+		return designation;
+	}
+
+	public void setDesignation(OrganizationStructure designation) {
+		this.designation = designation;
+	}
+
+	@Column(name = "REPORTING_USER")
+	public int getReportingUser() {
+		return reportingUser;
+	}
+
+	public void setReportingUser(int reportingUser) {
+		this.reportingUser = reportingUser;
 	}
 
 }
