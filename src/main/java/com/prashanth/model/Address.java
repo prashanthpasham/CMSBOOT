@@ -22,6 +22,7 @@ public class Address {
 	private String district;
 	private String state;
 	private MangementInfoDetails mangementInfoDetails;
+	private Student student;
 
 	@Id
 	@SequenceGenerator(sequenceName = "seq_address", allocationSize = 1, name = "seq_address")
@@ -97,6 +98,16 @@ public class Address {
 
 	public void setMangementInfoDetails(MangementInfoDetails mangementInfoDetails) {
 		this.mangementInfoDetails = mangementInfoDetails;
+	}
+
+	@ManyToOne
+	@JoinColumn(name = "STUDENT_ID")
+	public Student getStudent() {
+		return student;
+	}
+
+	public void setStudent(Student student) {
+		this.student = student;
 	}
 
 }
