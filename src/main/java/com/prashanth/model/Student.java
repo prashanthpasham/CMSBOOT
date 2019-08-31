@@ -27,10 +27,11 @@ public class Student {
 	private String parentName;
 	private String parentPhoneNo;
 	private Set<Class> classes;
+	private int YearOfPass;
 
 	@Id
-	@SequenceGenerator(sequenceName = "seq_lookup_data", allocationSize = 1, name = "seq_lookup_data")
-	@GeneratedValue(generator = "seq_lookup_data", strategy = GenerationType.SEQUENCE)
+	@SequenceGenerator(sequenceName = "seq_student", allocationSize = 1, name = "seq_student")
+	@GeneratedValue(generator = "seq_student", strategy = GenerationType.SEQUENCE)
 	@Column(name = "CLASS_ID")
 	public int getStudentId() {
 		return studentId;
@@ -128,6 +129,15 @@ public class Student {
 
 	public void setClasses(Set<Class> classes) {
 		this.classes = classes;
+	}
+
+	@Column(name = "YEAR_OF_PASS")
+	public int getYearOfPass() {
+		return YearOfPass;
+	}
+
+	public void setYearOfPass(int yearOfPass) {
+		YearOfPass = yearOfPass;
 	}
 
 }

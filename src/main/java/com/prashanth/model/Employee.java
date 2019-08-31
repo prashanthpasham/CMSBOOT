@@ -38,6 +38,7 @@ public class Employee {
 	private String experience;
 	private Set<EmployeeDetails> employeeDetailsSet;
 	private Department department;
+	private String employeeType;
 
 	@Id
 	@SequenceGenerator(sequenceName = "seq_employee", allocationSize = 1, name = "seq_employee")
@@ -206,6 +207,16 @@ public class Employee {
 
 	public void setDepartment(Department department) {
 		this.department = department;
+	}
+
+	@Column(name = "EMPLOYEE_TYPE")
+	public String getEmployeeType() {
+		/* Teaching Staff ,Non-Teaching Staff */
+		return employeeType;
+	}
+
+	public void setEmployeeType(String employeeType) {
+		this.employeeType = employeeType;
 	}
 
 }
