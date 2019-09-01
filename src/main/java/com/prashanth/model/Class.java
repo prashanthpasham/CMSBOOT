@@ -49,7 +49,7 @@ public class Class {
 	}
 
 	@ManyToOne
-	@JoinColumn(name = "LOOKUP_DATA")
+	@JoinColumn(name = "COURSE_LOOKUP_DATA")
 	public LookUpData getCoursesLookUp() {
 		return coursesLookUp;
 	}
@@ -58,6 +58,8 @@ public class Class {
 		this.coursesLookUp = coursesLookUp;
 	}
 
+	@ManyToOne
+	@JoinColumn(name = "SEM_LOOKUP_DATA")
 	public LookUpData getSemLookUp() {
 		return SemLookUp;
 	}
