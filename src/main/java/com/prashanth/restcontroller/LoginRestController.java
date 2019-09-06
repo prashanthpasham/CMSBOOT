@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.prashanth.model.Address;
 import com.prashanth.model.MangementInfoDetails;
+import com.prashanth.service.LoginServiceIntf;
 import com.prashanth.service.ManagementInfoService;
 
 @RestController
@@ -24,7 +25,8 @@ import com.prashanth.service.ManagementInfoService;
 public class LoginRestController {
 	@Autowired
 	private ManagementInfoService managementInfoService;
-
+	@Autowired
+	private LoginServiceIntf loginServiceIntf;
 	@RequestMapping(value = "/management-info", consumes = "application/json", method = RequestMethod.POST)
 	public @ResponseBody String addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
@@ -85,6 +87,20 @@ public class LoginRestController {
 			e.printStackTrace();
 		}
 		return response.toJSONString();
+	}
+	@RequestMapping(value = "/login", consumes = "application/json", method = RequestMethod.POST)
+	public @ResponseBody String loginValidation(@RequestBody String obj) {
+		JSONObject result =new JSONObject();
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject jsonObj=(JSONObject)parser.parse(obj);
+			if(jsonObj!=null) {
+				result= loginServiceIntf.validateLogin(jsonObj);
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return result.toJSONString();
 	}
 
 	public ManagementInfoService getManagementInfoService() {
