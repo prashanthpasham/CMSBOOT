@@ -88,7 +88,7 @@ public class LoginRestController {
 		}
 		return response.toJSONString();
 	}
-	@RequestMapping(value = "/login", consumes = "application/json", method = RequestMethod.POST)
+	@RequestMapping(value = "/validate", consumes = "application/json", method = RequestMethod.POST)
 	public @ResponseBody String loginValidation(@RequestBody String obj) {
 		JSONObject result =new JSONObject();
 		try {
