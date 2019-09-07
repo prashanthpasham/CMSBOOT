@@ -21,13 +21,13 @@ import javax.persistence.UniqueConstraint;
 @Table(name = "EMPLOYEE", uniqueConstraints = @UniqueConstraint(columnNames = { "employee_Code" }))
 public class Employee {
 	private int employeeId;
-	private int employeeCode;
+	private String employeeCode;
 	private String employeeName;
 	private String createdUser;
 	private Date createdDate;
 	private Date joinedDate;
 	private int ownerId;
-	private OrganizationStructure designation;
+	private int designation;
 	private Set<Address> addressSet;
 	private long phoneNumber;
 	private double salary;
@@ -53,11 +53,11 @@ public class Employee {
 	}
 
 	@Column(name = "EMPLOYEE_CODE")
-	public int getEmployeeCode() {
+	public String getEmployeeCode() {
 		return employeeCode;
 	}
 
-	public void setEmployeeCode(int employeeCode) {
+	public void setEmployeeCode(String employeeCode) {
 		this.employeeCode = employeeCode;
 	}
 
@@ -106,13 +106,12 @@ public class Employee {
 		this.ownerId = ownerId;
 	}
 
-	@ManyToOne(targetEntity = OrganizationStructure.class, fetch = FetchType.LAZY)
-	@JoinColumn(name = "DESIGNATION_ID")
-	public OrganizationStructure getDesignation() {
+	@Column(name = "DESIGNATION_ID")
+	public int getDesignation() {
 		return designation;
 	}
 
-	public void setDesignation(OrganizationStructure designation) {
+	public void setDesignation(int designation) {
 		this.designation = designation;
 	}
 

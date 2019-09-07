@@ -22,7 +22,7 @@ public class Users {
 	private long empId;
 	private Role roleId;
 	private long ownerId;
-	private OrganizationStructure designation;
+	private int designation;
 	private int reportingUser;
 
 	@Id
@@ -95,13 +95,13 @@ public class Users {
 		this.ownerId = ownerId;
 	}
 
-	@OneToOne
-	@JoinColumn(name = "DESIGNATION_ID")
-	public OrganizationStructure getDesignation() {
+	
+	@Column(name = "DESIGNATION_ID")
+	public int getDesignation() {
 		return designation;
 	}
 
-	public void setDesignation(OrganizationStructure designation) {
+	public void setDesignation(int designation) {
 		this.designation = designation;
 	}
 

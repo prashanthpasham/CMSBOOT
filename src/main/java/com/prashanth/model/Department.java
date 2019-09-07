@@ -14,6 +14,7 @@ public class Department {
 	private int departmentId;
 	private String deptCode;
 	private String departmentName;
+	private int ownerId;
 
 	@Id
 	@SequenceGenerator(sequenceName = "seq_department", allocationSize = 1, name = "seq_department")
@@ -44,5 +45,15 @@ public class Department {
 	public void setDepartmentName(String departmentName) {
 		this.departmentName = departmentName;
 	}
+
+	@Column(name = "OWNER_ID")
+	public int getOwnerId() {
+		return ownerId;
+	}
+
+	public void setOwnerId(int ownerId) {
+		this.ownerId = ownerId;
+	}
+	
 
 }

@@ -28,19 +28,19 @@ private EntityManager entityManager;
 			List<Users> data=entityManager.createQuery(hql).getResultList();
 			if(!data.isEmpty()) {
 				Users user=data.get(0);
-				if(user.getStatus().equalsIgnoreCase("active")) {
-					Role role=user.getRoleId();
+				if (user.getStatus().equalsIgnoreCase("active")) {
+					Role role = user.getRoleId();
 					response.put("username", user.getUserName());
 					response.put("role", role.getRole());
 					response.put("ownerid", user.getOwnerId());
-					JSONArray menus= new JSONArray();
-					Map<Integer,JSONObject> topMenus = new HashMap<Integer,JSONObject>();
-					for(RoleMenuMap rmp:role.getRoleMenus()) {
-						MenuItem mi=rmp.getMenuItem();
-						JSONObject topMenu=null;
+					//JSONArray menus = new JSONArray();
+					System.out.println("role.getRoleMenus()>>"+role.getRoleMenus().size());
+					Map<Integer, JSONObject> topMenus = new HashMap<Integer, JSONObject>();
+					for (RoleMenuMap rmp : role.getRoleMenus()) {
+						MenuItem mi = rmp.getMenuItem();
 						if (mi.getParentMenuId() == 0) {
 							if (!topMenus.containsKey(mi.getMenuItemTitle())) {
-								topMenu = new JSONObject();
+								JSONObject topMenu = new JSONObject();
 								topMenu.put("menutitle", mi.getMenuItemTitle());
 								topMenu.put("menuid", mi.getMenuItemId());
 								topMenu.put("menuurl", mi.getMenuItemUrl());
@@ -49,8 +49,14 @@ private EntityManager entityManager;
 
 							}
 
-						} else {
-							topMenu = topMenus.get(mi.getMenuItemId());
+						}
+					}
+                         System.out.println("topMenus>>"+topMenus);
+					for (RoleMenuMap rmp : role.getRoleMenus()) {
+						MenuItem mi = rmp.getMenuItem();
+						//System.out.println("mi>>"+mi.getMenuItemId());
+						if (mi!=null && mi.getParentMenuId() > 0) {
+							JSONObject topMenu = topMenus.get(mi.getParentMenuId());
 							JSONArray array = (JSONArray) topMenu.get("menus");
 							if (array == null) {
 								array = new JSONArray();
@@ -61,16 +67,16 @@ private EntityManager entityManager;
 							menu.put("menuurl", mi.getMenuItemUrl());
 							array.add(menu);
 							topMenu.put("menus", array);
-							topMenus.put(mi.getMenuItemId(), topMenu);
+							topMenus.put(mi.getParentMenuId(), topMenu);
+						}
 
-						} 
-						
 					}
+
 					JSONArray topArray = new JSONArray();
-					for(Map.Entry<Integer, JSONObject> me:topMenus.entrySet()) {
+					for (Map.Entry<Integer, JSONObject> me : topMenus.entrySet()) {
 						topArray.add(me.getValue());
 					}
-					response.put("links",topArray);
+					response.put("links", topArray);
 					response.put("error", "");
 				}else {
 					response.put("error", "User is inactive");
