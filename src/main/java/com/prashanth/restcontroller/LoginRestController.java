@@ -28,12 +28,6 @@ public class LoginRestController {
 	@Autowired
 	private LoginServiceIntf loginServiceIntf;
 
-	@RequestMapping(value = "/test",produces = "application/json")
-	public @ResponseBody String test() {
-		JSONObject object = new JSONObject();
-		object.put("user", "test");
-		return object.toJSONString();
-	}
 	@RequestMapping(value = "/management-info", consumes = "application/json", method = RequestMethod.POST)
 	public @ResponseBody String addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
