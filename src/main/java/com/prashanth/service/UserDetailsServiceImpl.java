@@ -22,8 +22,9 @@ import com.prashanth.model.Users;
 public class UserDetailsServiceImpl implements UserDetailsService {
 	@Autowired
 	private LoginDaoIntf loginDaoIntf;
-	@Autowired
-	private BCryptPasswordEncoder bcryptPasswordEncoder;
+	/*
+	 * @Autowired private BCryptPasswordEncoder bcryptPasswordEncoder;
+	 */
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -41,11 +42,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 			 * InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 			 * manager.createUser(users.username(user.getUserName()).password(bcryptPasswordEncoder.encode(user.getPassword())).roles(user.getRoleId().getRole()).build());
 			 */
-		   return users.username(user.getUserName()).password(bcryptPasswordEncoder.encode(user.getPassword())).roles(user.getRoleId().getRole()).build();
+		   return users.username(user.getUserName()).password(new BCryptPasswordEncoder().encode(user.getPassword())).roles(user.getRoleId().getRole()).build();
 		} else {
 			throw new UsernameNotFoundException(username);
 		}
 		// return null;
 	}
+
+	
 
 }

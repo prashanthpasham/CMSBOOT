@@ -9,6 +9,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,14 +25,24 @@ import com.prashanth.model.Address;
 import com.prashanth.model.MangementInfoDetails;
 import com.prashanth.service.LoginServiceIntf;
 import com.prashanth.service.ManagementInfoService;
+import com.prashanth.service.UserDetailsServiceImpl;
 
 @RestController
 @RequestMapping("/login")
+@CrossOrigin
 public class LoginRestController {
 	@Autowired
 	private ManagementInfoService managementInfoService;
 	@Autowired
 	private LoginServiceIntf loginServiceIntf;
+
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
+	@Autowired
+	private UserDetailsServiceImpl userDetailsService;
 
 	@RequestMapping(value = "/management-info", consumes = "application/json", method = RequestMethod.POST)
 	public @ResponseBody String addManagementInfo(@RequestBody String management) {
@@ -89,16 +105,46 @@ public class LoginRestController {
 		}
 		return response.toJSONString();
 	}
+
 	@RequestMapping(value = "/validate", consumes = "application/json", method = RequestMethod.POST)
 	public @ResponseBody String loginValidation(@RequestBody String obj) {
-		JSONObject result =new JSONObject();
+		JSONObject result = new JSONObject();
 		try {
 			JSONParser parser = new JSONParser();
-			JSONObject jsonObj=(JSONObject)parser.parse(obj);
-			if(jsonObj!=null) {
-				result= loginServiceIntf.validateLogin(jsonObj);
+			JSONObject jsonObj = (JSONObject) parser.parse(obj);
+			if (jsonObj != null) {
+				result = loginServiceIntf.validateLogin(jsonObj);
 			}
-		}catch(Exception e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result.toJSONString();
+	}
+
+	@PostMapping(value = "/authenticate", consumes = "application/json")
+	public @ResponseBody String authenticateUser(@RequestBody String obj) {
+		JSONObject result = new JSONObject();
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject jsonObj = (JSONObject) parser.parse(obj);
+			if (jsonObj != null) {
+				authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+						jsonObj.get("username").toString(), jsonObj.get("password").toString()));
+				try {
+					UserDetails user = userDetailsService.loadUserByUsername(jsonObj.get("username").toString());
+					if (user != null) {
+						String token = jwtTokenUtil.generateToken(user);
+						result.put("token", token);
+					} else {
+						result.put("token", "");
+					}
+					result.put("error", user != null ? "" : "UserName not found");
+				} catch (UsernameNotFoundException e) {
+					result.put("error", "UserName not found");
+				}
+			}
+		} catch (Exception e) {
+			result.put("error", "");
 			e.printStackTrace();
 		}
 		return result.toJSONString();
@@ -110,6 +156,38 @@ public class LoginRestController {
 
 	public void setManagementInfoService(ManagementInfoService managementInfoService) {
 		this.managementInfoService = managementInfoService;
+	}
+
+	public LoginServiceIntf getLoginServiceIntf() {
+		return loginServiceIntf;
+	}
+
+	public void setLoginServiceIntf(LoginServiceIntf loginServiceIntf) {
+		this.loginServiceIntf = loginServiceIntf;
+	}
+
+	public AuthenticationManager getAuthenticationManager() {
+		return authenticationManager;
+	}
+
+	public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+		this.authenticationManager = authenticationManager;
+	}
+
+	public JwtTokenUtil getJwtTokenUtil() {
+		return jwtTokenUtil;
+	}
+
+	public void setJwtTokenUtil(JwtTokenUtil jwtTokenUtil) {
+		this.jwtTokenUtil = jwtTokenUtil;
+	}
+
+	public UserDetailsServiceImpl getUserDetailsService() {
+		return userDetailsService;
+	}
+
+	public void setUserDetailsService(UserDetailsServiceImpl userDetailsService) {
+		this.userDetailsService = userDetailsService;
 	}
 
 }

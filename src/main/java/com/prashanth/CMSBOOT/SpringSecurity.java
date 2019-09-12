@@ -3,28 +3,34 @@ package com.prashanth.CMSBOOT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.User.UserBuilder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.prashanth.restcontroller.JwtAuthenticationEntryPoint;
+import com.prashanth.restcontroller.JwtRequestFilter;
 import com.prashanth.service.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SpringSecurity extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private UserDetailsServiceImpl userDetailsService;
+	@Autowired
+	private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+	@Autowired
+	private JwtRequestFilter jwtRequestFilter;
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -49,12 +55,10 @@ public class SpringSecurity extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		// TODO Auto-generated method stub
-		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		http.authorizeRequests().antMatchers("/secure/**").authenticated()
-		.and().httpBasic();
-		http.authorizeRequests().antMatchers("/login/**").permitAll();
-		http.csrf().disable();
-
+		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().csrf().disable();
+		http.authorizeRequests().antMatchers("/login/**").permitAll().anyRequest().authenticated().and()
+				.exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
+				.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 
 	@Bean
@@ -62,12 +66,19 @@ public class SpringSecurity extends WebSecurityConfigurerAdapter {
 		DaoAuthenticationProvider dao = new DaoAuthenticationProvider();
 		try {
 			dao.setUserDetailsService(userDetailsService);
+			dao.setPasswordEncoder(getPasswordEncoder());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		dao.setPasswordEncoder(getPasswordEncoder());
+
 		return dao;
+	}
+
+	@Bean
+	@Override
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		return super.authenticationManagerBean();
 	}
 
 	@Bean
