@@ -17,6 +17,14 @@ public class MenuItem {
 	private int menuOrder;
 	private int parentMenuId;
 
+	public MenuItem() {
+
+	}
+
+	public MenuItem(int menuItemId) {
+		this.menuItemId = menuItemId;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_MENU_ITEM")
 	@SequenceGenerator(name = "SEQ_MENU_ITEM", sequenceName = "SEQ_MENU_ITEM", allocationSize = 1)

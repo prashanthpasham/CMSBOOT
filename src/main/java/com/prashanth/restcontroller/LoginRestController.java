@@ -1,16 +1,15 @@
 package com.prashanth.restcontroller;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,6 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.prashanth.model.Address;
 import com.prashanth.model.MangementInfoDetails;
+import com.prashanth.model.MenuItem;
+import com.prashanth.model.Role;
+import com.prashanth.model.RoleMenuMap;
 import com.prashanth.service.LoginServiceIntf;
 import com.prashanth.service.ManagementInfoService;
 import com.prashanth.service.UserDetailsServiceImpl;
@@ -44,13 +46,13 @@ public class LoginRestController {
 	private JwtTokenUtil jwtTokenUtil;
 	@Autowired
 	private UserDetailsServiceImpl userDetailsService;
+	private JSONParser parser = new JSONParser();
 
 	@RequestMapping(value = "/management-info", consumes = "application/json", method = RequestMethod.POST)
 	public @ResponseBody String addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
 		try {
 			if (management != null) {
-				JSONParser parser = new JSONParser();
 				JSONObject object = (JSONObject) parser.parse(management);
 				if (object != null) {
 					MangementInfoDetails mid = new MangementInfoDetails();
@@ -111,8 +113,8 @@ public class LoginRestController {
 	public @ResponseBody String findMenusByUserName(@RequestParam("username") String userName) {
 		JSONObject result = new JSONObject();
 		try {
-			//JSONParser parser = new JSONParser();
-			//JSONObject jsonObj = (JSONObject) parser.parse(obj);
+			// JSONParser parser = new JSONParser();
+			// JSONObject jsonObj = (JSONObject) parser.parse(obj);
 			if (userName != null) {
 				result = loginServiceIntf.menusByUserName(userName);
 			}
@@ -126,12 +128,12 @@ public class LoginRestController {
 	public @ResponseBody String authenticateUser(@RequestBody String obj) {
 		JSONObject result = new JSONObject();
 		try {
-			JSONParser parser = new JSONParser();
+
 			JSONObject jsonObj = (JSONObject) parser.parse(obj);
 			if (jsonObj != null) {
 				try {
 					result = loginServiceIntf.validateLogin(jsonObj);
-					
+
 					if (result != null) {
 						UserDetails user = userDetailsService.loadUserByUsername(jsonObj.get("username").toString());
 						if (user != null) {
@@ -151,13 +153,62 @@ public class LoginRestController {
 						result.put("error", "");
 						result.put("token", "");
 					}
-					
+
 				} catch (UsernameNotFoundException e) {
 					result.put("error", "UserName not found");
 				}
 			}
 		} catch (Exception e) {
 			result.put("error", "");
+			e.printStackTrace();
+		}
+		return result.toJSONString();
+	}
+
+	@RequestMapping(value = "/add-role", consumes = "application/json", method = RequestMethod.POST)
+	public @ResponseBody String addRole(@RequestBody String role) {
+		JSONObject result = new JSONObject();
+		try {
+			try {
+				JSONObject jsonObj = (JSONObject) parser.parse(role);
+				if (jsonObj != null) {
+					Role r = new Role();
+					if (jsonObj.get("role") != null)
+						r.setRole(jsonObj.get("role").toString().trim());
+					if (jsonObj.get("description") != null)
+						r.setRoleDescription(jsonObj.get("role").toString().trim());
+					// if(jsonObj.get("createdDate")!=null)
+					r.setCreatedDateTime(new Date());
+					if (jsonObj.get("createdUser") != null)
+						r.setCreatedUserName(jsonObj.get("createdUser").toString());
+					r.setModifiedDateTime(new Date());
+					if (jsonObj.get("modifiedUser") != null)
+						r.setModifiedUserName(jsonObj.get("modifiedUser").toString());
+					if (jsonObj.get("ownerId") != null)
+						r.setOwnerId(Integer.parseInt(jsonObj.get("ownerId").toString()));
+					JSONArray menus = (JSONArray) jsonObj.get("menus");
+					Set<RoleMenuMap> roleMenus = new HashSet<RoleMenuMap>();
+					for (int i = 0; i < menus.size(); i++) {
+						JSONObject menu = (JSONObject) menus.get(i);
+						RoleMenuMap rmm = new RoleMenuMap();
+						rmm.setMenuItem(new MenuItem(Integer.parseInt(menu.get("menuid").toString())));
+						rmm.setAddOperation(Integer.parseInt(menu.get("add").toString()));
+						rmm.setEditOperation(Integer.parseInt(menu.get("edit").toString()));
+						rmm.setDeleteOperation(Integer.parseInt(menu.get("delete").toString()));
+						roleMenus.add(rmm);
+					}
+					r.setRoleMenus(roleMenus);
+					result = loginServiceIntf.persistRole(r);
+
+				}
+			} catch (ParseException e) {
+				result.put("result", "fail");
+				result.put("msg", "Invalid JSON");
+				e.printStackTrace();
+			}
+		} catch (Exception e) {
+			result.put("result", "fail");
+			result.put("msg", e.getMessage());
 			e.printStackTrace();
 		}
 		return result.toJSONString();

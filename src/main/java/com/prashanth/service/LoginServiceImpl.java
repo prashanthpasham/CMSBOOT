@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.prashanth.dao.LoginDaoIntf;
+import com.prashanth.model.Role;
 
 @Service
 @Transactional
@@ -32,6 +33,12 @@ public class LoginServiceImpl implements LoginServiceIntf {
 
 	public void setLoginDaoIntf(LoginDaoIntf loginDaoIntf) {
 		this.loginDaoIntf = loginDaoIntf;
+	}
+
+	@Override
+	public JSONObject persistRole(Role r) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.persistRole(r);
 	}
 
 }

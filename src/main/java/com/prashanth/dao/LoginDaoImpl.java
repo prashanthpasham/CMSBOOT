@@ -37,8 +37,8 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			if (!data.isEmpty()) {
 				response = new JSONObject();
 				Users user = data.get(0);
-				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUserName().toLowerCase(),
-						user.getPassword(), null);
+				UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+						user.getUserName().toLowerCase(), user.getPassword(), null);
 				SecurityContextHolder.getContext().setAuthentication(token);
 				response.put("token", token.getName());
 				response.put("username", user.getUserName());
@@ -53,7 +53,8 @@ public class LoginDaoImpl implements LoginDaoIntf {
 	public Users findUserByName(String userName) {
 		Users user = null;
 		try {
-			List<Users> usersList = entityManager.createQuery("from Users u where lower(u.userName)='" + userName.trim().toLowerCase() + "'")
+			List<Users> usersList = entityManager
+					.createQuery("from Users u where lower(u.userName)='" + userName.trim().toLowerCase() + "'")
 					.getResultList();
 			if (usersList.size() > 0) {
 				user = usersList.get(0);
@@ -67,7 +68,7 @@ public class LoginDaoImpl implements LoginDaoIntf {
 	@Override
 	public JSONObject menusByUserName(String userName) {
 		JSONObject response = new JSONObject();
-		     Users user=findUserByName(userName);
+		Users user = findUserByName(userName);
 		if (user != null) {
 			if (user.getStatus().equalsIgnoreCase("active")) {
 
@@ -124,8 +125,35 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			} else {
 				response.put("error", "User is inactive");
 			}
-		}else {
+		} else {
 			response.put("error", "User not found");
+		}
+		return response;
+	}
+
+	@Override
+	public JSONObject persistRole(Role r) {
+		JSONObject response = new JSONObject();
+		try {
+			List<Role> roles = entityManager.createQuery("from Role r where lower(r.role)='"
+					+ r.getRole().toString().trim().toLowerCase() + "' and r.owner_id=" + r.getOwnerId())
+					.getResultList();
+			if (roles.isEmpty()) {
+				entityManager.persist(r);
+				for (RoleMenuMap rmm : r.getRoleMenus()) {
+					rmm.setRole(r);
+					entityManager.persist(rmm);
+				}
+				response.put("result", "success");
+				response.put("msg", "Role Created");
+			} else {
+				response.put("result", "fail");
+				response.put("msg", "Same Role exist");
+			}
+		} catch (Exception e) {
+			response.put("result", "fail");
+			response.put("msg", e.getMessage());
+			e.printStackTrace();
 		}
 		return response;
 	}
