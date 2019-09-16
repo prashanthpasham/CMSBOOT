@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -106,14 +107,14 @@ public class LoginRestController {
 		return response.toJSONString();
 	}
 
-	@RequestMapping(value = "/validate", consumes = "application/json", method = RequestMethod.POST)
-	public @ResponseBody String loginValidation(@RequestBody String obj) {
+	@RequestMapping(value = "/menus-user", consumes = "application/json", method = RequestMethod.GET)
+	public @ResponseBody String findMenusByUserName(@RequestParam("username") String userName) {
 		JSONObject result = new JSONObject();
 		try {
-			JSONParser parser = new JSONParser();
-			JSONObject jsonObj = (JSONObject) parser.parse(obj);
-			if (jsonObj != null) {
-				result = loginServiceIntf.validateLogin(jsonObj);
+			//JSONParser parser = new JSONParser();
+			//JSONObject jsonObj = (JSONObject) parser.parse(obj);
+			if (userName != null) {
+				result = loginServiceIntf.menusByUserName(userName);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -128,17 +129,29 @@ public class LoginRestController {
 			JSONParser parser = new JSONParser();
 			JSONObject jsonObj = (JSONObject) parser.parse(obj);
 			if (jsonObj != null) {
-				authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-						jsonObj.get("username").toString(), jsonObj.get("password").toString()));
 				try {
-					UserDetails user = userDetailsService.loadUserByUsername(jsonObj.get("username").toString());
-					if (user != null) {
-						String token = jwtTokenUtil.generateToken(user);
-						result.put("token", token);
+					result = loginServiceIntf.validateLogin(jsonObj);
+					
+					if (result != null) {
+						UserDetails user = userDetailsService.loadUserByUsername(jsonObj.get("username").toString());
+						if (user != null) {
+							/*
+							 * authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+							 * jsonObj.get("username").toString(), jsonObj.get("password").toString()));
+							 */
+							String token = jwtTokenUtil.generateToken(user);
+							result.put("error", "");
+							result.put("token", token);
+						} else {
+							result.put("token", "");
+							result.put("error", "UserName not found");
+						}
+
 					} else {
+						result.put("error", "");
 						result.put("token", "");
 					}
-					result.put("error", user != null ? "" : "UserName not found");
+					
 				} catch (UsernameNotFoundException e) {
 					result.put("error", "UserName not found");
 				}

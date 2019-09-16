@@ -6,7 +6,9 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,19 +37,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		final String requestTokenHeader = request.getHeader("Authorization");
 
 		String username = null;
-		String jwtToken = null;
+		String jwtToken = requestTokenHeader;
 		// JWT Token is in the form "Bearer token". Remove Bearer word and get
 		// only the Token
-		if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
-			jwtToken = requestTokenHeader.substring(7);
+		//JSONObject obj = new JSONObject();
+		HttpSession session =request.getSession();
+		if (requestTokenHeader != null /* && requestTokenHeader.startsWith("Bearer ") */) {
+			//jwtToken = requestTokenHeader.substring(7);
 			try {
 				username = jwtTokenUtil.getUsernameFromToken(jwtToken);
 			} catch (IllegalArgumentException e) {
 				System.out.println("Unable to get JWT Token");
+				session.setAttribute("token", "Token Required to Access");
 			} catch (ExpiredJwtException e) {
 				System.out.println("JWT Token has expired");
+				session.setAttribute("token", "Token Expired");
+				//obj.put("error", "Token Expired");
+				//response.getWriter().write(obj.toJSONString());
 			}
 		} else {
+			session.setAttribute("token", "Token Required in header");
 			logger.warn("JWT Token does not begin with Bearer String");
 		}
 
@@ -70,6 +79,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 				SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 			}
 		}
+		
 		chain.doFilter(request, response);
 	}
 

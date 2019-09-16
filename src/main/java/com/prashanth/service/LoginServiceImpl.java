@@ -20,6 +20,12 @@ public class LoginServiceImpl implements LoginServiceIntf {
 		return loginDaoIntf.validateLogin(login);
 	}
 
+	@Override
+	public JSONObject menusByUserName(String userName) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.menusByUserName(userName);
+	}
+
 	public LoginDaoIntf getLoginDaoIntf() {
 		return loginDaoIntf;
 	}

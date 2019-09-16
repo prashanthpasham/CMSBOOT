@@ -7,4 +7,5 @@ import com.prashanth.model.Users;
 public interface LoginDaoIntf {
 	public JSONObject validateLogin(JSONObject login);
 	public Users findUserByName(String userName);
+	public JSONObject menusByUserName(String userName);
 }
