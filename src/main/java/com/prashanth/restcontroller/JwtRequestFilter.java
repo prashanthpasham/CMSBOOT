@@ -42,8 +42,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		// only the Token
 		//JSONObject obj = new JSONObject();
 		HttpSession session =request.getSession();
-		if (requestTokenHeader != null /* && requestTokenHeader.startsWith("Bearer ") */) {
-			//jwtToken = requestTokenHeader.substring(7);
+		if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+			jwtToken = requestTokenHeader.substring(7);
 			try {
 				username = jwtTokenUtil.getUsernameFromToken(jwtToken);
 			} catch (IllegalArgumentException e) {
@@ -56,7 +56,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 				//response.getWriter().write(obj.toJSONString());
 			}
 		} else {
-			session.setAttribute("token", "Token Required in header");
+			session.setAttribute("token", "Token Required in header with Bearer space followed by token");
 			logger.warn("JWT Token does not begin with Bearer String");
 		}
 

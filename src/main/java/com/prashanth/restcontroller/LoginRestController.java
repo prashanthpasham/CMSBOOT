@@ -9,6 +9,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -48,8 +49,8 @@ public class LoginRestController {
 	private UserDetailsServiceImpl userDetailsService;
 	private JSONParser parser = new JSONParser();
 
-	@RequestMapping(value = "/management-info", consumes = "application/json", method = RequestMethod.POST)
-	public @ResponseBody String addManagementInfo(@RequestBody String management) {
+	@RequestMapping(value = "/management-info", produces = MediaType.APPLICATION_JSON_VALUE, consumes = "application/json", method = RequestMethod.POST)
+	public JSONObject addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
 		try {
 			if (management != null) {
@@ -106,11 +107,11 @@ public class LoginRestController {
 			response.put("message", e.getMessage());
 			e.printStackTrace();
 		}
-		return response.toJSONString();
+		return response;
 	}
 
-	@RequestMapping(value = "/menus-user", consumes = "application/json", method = RequestMethod.GET)
-	public @ResponseBody String findMenusByUserName(@RequestParam("username") String userName) {
+	@RequestMapping(value = "/menus-user", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+	public JSONObject findMenusByUserName(@RequestParam("username") String userName) {
 		JSONObject result = new JSONObject();
 		try {
 			// JSONParser parser = new JSONParser();
@@ -121,20 +122,21 @@ public class LoginRestController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return result.toJSONString();
+		return result;
 	}
 
-	@PostMapping(value = "/authenticate", consumes = "application/json")
-	public @ResponseBody String authenticateUser(@RequestBody String obj) {
+	@PostMapping(value = "/authenticate", consumes = "application/json", produces = MediaType.APPLICATION_JSON_VALUE)
+	public JSONObject authenticateUser(@RequestBody String obj) {
 		JSONObject result = new JSONObject();
 		try {
 
 			JSONObject jsonObj = (JSONObject) parser.parse(obj);
 			if (jsonObj != null) {
 				try {
-					result = loginServiceIntf.validateLogin(jsonObj);
+					JSONObject result2 = loginServiceIntf.validateLogin(jsonObj);
 
-					if (result != null) {
+					if (result2 != null) {
+						result = result2;
 						UserDetails user = userDetailsService.loadUserByUsername(jsonObj.get("username").toString());
 						if (user != null) {
 							/*
@@ -150,7 +152,7 @@ public class LoginRestController {
 						}
 
 					} else {
-						result.put("error", "");
+						result.put("error", "Invalid Credentials");
 						result.put("token", "");
 					}
 
@@ -162,11 +164,11 @@ public class LoginRestController {
 			result.put("error", "");
 			e.printStackTrace();
 		}
-		return result.toJSONString();
+		return result;
 	}
 
-	@RequestMapping(value = "/add-role", consumes = "application/json", method = RequestMethod.POST)
-	public @ResponseBody String addRole(@RequestBody String role) {
+	@RequestMapping(value = "/add-role", consumes = "application/json", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+	public JSONObject addRole(@RequestBody String role) {
 		JSONObject result = new JSONObject();
 		try {
 			try {
@@ -211,7 +213,7 @@ public class LoginRestController {
 			result.put("msg", e.getMessage());
 			e.printStackTrace();
 		}
-		return result.toJSONString();
+		return result;
 	}
 
 	public ManagementInfoService getManagementInfoService() {

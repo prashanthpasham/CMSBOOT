@@ -85,9 +85,9 @@ public class LoginDaoImpl implements LoginDaoIntf {
 						if (!topMenus.containsKey(mi.getMenuItemTitle())) {
 							JSONObject topMenu = new JSONObject();
 							topMenu.put("menutitle", mi.getMenuItemTitle());
-							topMenu.put("menuid", mi.getMenuItemId());
-							topMenu.put("menuurl", mi.getMenuItemUrl());
-							topMenu.put("menus", null);
+							//topMenu.put("menuid", mi.getMenuItemId());
+							//topMenu.put("menuurl", mi.getMenuItemUrl());
+							topMenu.put("menus", new JSONArray());
 							topMenus.put(mi.getMenuItemId(), topMenu);
 
 						}
@@ -101,13 +101,8 @@ public class LoginDaoImpl implements LoginDaoIntf {
 					if (mi != null && mi.getParentMenuId() > 0) {
 						JSONObject topMenu = topMenus.get(mi.getParentMenuId());
 						JSONArray array = (JSONArray) topMenu.get("menus");
-						if (array == null) {
-							array = new JSONArray();
-						}
 						JSONObject menu = new JSONObject();
 						menu.put("menutitle", mi.getMenuItemTitle());
-						menu.put("menuid", mi.getMenuItemId());
-						menu.put("menuurl", mi.getMenuItemUrl());
 						array.add(menu);
 						topMenu.put("menus", array);
 						topMenus.put(mi.getParentMenuId(), topMenu);
@@ -128,6 +123,7 @@ public class LoginDaoImpl implements LoginDaoIntf {
 		} else {
 			response.put("error", "User not found");
 		}
+		System.out.println("response>>"+response.toJSONString());
 		return response;
 	}
 
