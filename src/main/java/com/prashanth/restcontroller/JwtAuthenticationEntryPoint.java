@@ -26,6 +26,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Se
 			result = session.getAttribute("token").toString();
 			session.removeAttribute("token");
 		}
+		System.out.println("result>>"+result);
 		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, result);
 
 	}

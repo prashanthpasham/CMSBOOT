@@ -78,45 +78,32 @@ public class LoginDaoImpl implements LoginDaoIntf {
 				response.put("ownerid", user.getOwnerId());
 				// JSONArray menus = new JSONArray();
 				System.out.println("role.getRoleMenus()>>" + role.getRoleMenus().size());
-				Map<Integer, JSONObject> topMenus = new HashMap<Integer, JSONObject>();
-				for (RoleMenuMap rmp : role.getRoleMenus()) {
-					MenuItem mi = rmp.getMenuItem();
-					if (mi.getParentMenuId() == 0) {
-						if (!topMenus.containsKey(mi.getMenuItemTitle())) {
-							JSONObject topMenu = new JSONObject();
-							topMenu.put("menutitle", mi.getMenuItemTitle());
-							topMenu.put("menuid", mi.getMenuItemId());
-							topMenu.put("menuurl", mi.getMenuItemUrl());
-							topMenu.put("menus", null);
-							topMenus.put(mi.getMenuItemId(), topMenu);
-
-						}
-
-					}
-				}
-				System.out.println("topMenus>>" + topMenus);
-				for (RoleMenuMap rmp : role.getRoleMenus()) {
-					MenuItem mi = rmp.getMenuItem();
-					// System.out.println("mi>>"+mi.getMenuItemId());
-					if (mi != null && mi.getParentMenuId() > 0) {
-						JSONObject topMenu = topMenus.get(mi.getParentMenuId());
-						JSONArray array = (JSONArray) topMenu.get("menus");
-						if (array == null) {
-							array = new JSONArray();
+				Map<String, JSONObject> topMenus = new HashMap<String, JSONObject>();
+				List<Object[]> ls=entityManager.createNativeQuery("select m.MENU_ITEM_TITLE,(select m1.MENU_ITEM_TITLE from MENU_ITEM m1 where m1.PARENT_MENU_ID=0 and m1.MENU_ITEM_ID=m.PARENT_MENU_ID) from MENU_ITEM m,ROLE_MENU_MAP rm where m.MENU_ITEM_ID=rm.MENU_ITEM_ID"
+						+" and  rm.ROLE_ID="+role.getRoleId()).getResultList();
+				if (!ls.isEmpty()) {
+					for (Object[] obj : ls) {
+						JSONObject top = null;
+						JSONArray menus = null;
+						if (topMenus.containsKey(obj[1].toString())) {
+							top = topMenus.get(obj[1].toString());
+							menus=(JSONArray)top.get("menus");
+						} else {
+							top = new JSONObject();
+							top.put("menutitle", obj[1].toString());
+							menus=new JSONArray();
 						}
 						JSONObject menu = new JSONObject();
-						menu.put("menutitle", mi.getMenuItemTitle());
-						menu.put("menuid", mi.getMenuItemId());
-						menu.put("menuurl", mi.getMenuItemUrl());
-						array.add(menu);
-						topMenu.put("menus", array);
-						topMenus.put(mi.getParentMenuId(), topMenu);
+						menu.put("menutitle", obj[0].toString());
+						menus.add(menu);
+						top.put("menus", menus);
+						topMenus.put(obj[1].toString(), top);
 					}
-
 				}
+				
 
 				JSONArray topArray = new JSONArray();
-				for (Map.Entry<Integer, JSONObject> me : topMenus.entrySet()) {
+				for (Map.Entry<String, JSONObject> me : topMenus.entrySet()) {
 					topArray.add(me.getValue());
 				}
 				response.put("links", topArray);
