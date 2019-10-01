@@ -1,6 +1,7 @@
 package com.prashanth.restcontroller;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -15,13 +16,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.prashanth.service.UserDetailsServiceImpl;
 
+import antlr.collections.Enumerator;
 import io.jsonwebtoken.ExpiredJwtException;
 
 @Component
+@CrossOrigin
 public class JwtRequestFilter extends OncePerRequestFilter {
 
 	@Autowired
@@ -33,9 +37,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
+		
+		Enumeration en = request.getHeaderNames();
+		while (en.hasMoreElements()) {
+			String key=en.nextElement().toString();
+			System.out.println("key>>"+key);
+			System.out.println("request>>" + request.getHeader(key));
+		}
+		 
+			
+	
 
 		final String requestTokenHeader = request.getHeader("Authorization");
-
+		System.out.println("request>>"+requestTokenHeader);
 		String username = null;
 		String jwtToken = null;
 		// JWT Token is in the form "Bearer token". Remove Bearer word and get
@@ -43,7 +57,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		// JSONObject obj = new JSONObject();
 		HttpSession session = request.getSession();
 		if (requestTokenHeader != null) {
-			if (requestTokenHeader.startsWith("Bearer ")) {
+			if (requestTokenHeader.startsWith("Bearer")) {
 				logger.info("requestTokenHeader>>"+requestTokenHeader);
 				jwtToken = requestTokenHeader.substring(7).trim();
 				try {
