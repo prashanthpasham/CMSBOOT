@@ -43,21 +43,20 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 			 * InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 			 * manager.createUser(users.username(user.getUserName()).password(bcryptPasswordEncoder.encode(user.getPassword())).roles(user.getRoleId().getRole()).build());
 			 */
-			         try {
-						AESEncoder.init("t7GcYbbdbKxZtV2ge6qpeQ==");
-						String pwd = AESEncoder.getInstance().decode(user.getPassword()).split("#")[1];
-						 return users.username(user.getUserName()).password(new BCryptPasswordEncoder().encode(pwd)).roles(user.getRoleId().getRole()).build();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-		  
+			  	try {
+					AESEncoder.init("t7GcYbbdbKxZtV2ge6qpeQ==");
+					String pwd = AESEncoder.getInstance().decode(user.getPassword()).split("#")[1];
+					   return users.username(user.getUserName()).password(new BCryptPasswordEncoder().encode(pwd)).roles(user.getRoleId().getRole()).build();
+			  	} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+
 		} else {
 			throw new UsernameNotFoundException(username);
 		}
-		// return null;
-		return null;
+		 return null;
 	}
 
 	

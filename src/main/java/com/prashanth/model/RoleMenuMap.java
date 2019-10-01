@@ -23,8 +23,8 @@ public class RoleMenuMap {
 	private int deleteOperation;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO, generator = "SEQ_ROLE_MENU_ITEM_MAP")
-	@SequenceGenerator(name = "SEQ_ROLE_MENU_ITEM_MAP", sequenceName = "SEQ_ROLE_MENU_ITEM_MAP")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_ROLE_MENU_ITEM_MAP")
+	@SequenceGenerator(name = "SEQ_ROLE_MENU_ITEM_MAP", sequenceName = "SEQ_ROLE_MENU_ITEM_MAP",allocationSize = 1)
 	@Column(name = "ROLE_MENU_ITEM_MAP_ID", unique = true, nullable = false, precision = 22, scale = 0)
 	public int getRoleMenuItemMapId() {
 		return this.roleMenuItemMapId;

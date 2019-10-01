@@ -49,7 +49,7 @@ public class LoginRestController {
 	private UserDetailsServiceImpl userDetailsService;
 	private JSONParser parser = new JSONParser();
 
-	@RequestMapping(value = "/management-info", produces = MediaType.APPLICATION_JSON_VALUE, consumes = "application/json", method = RequestMethod.POST)
+	@RequestMapping(value = "/management-info", consumes = "application/json", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
 	public JSONObject addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
 		try {
@@ -133,10 +133,9 @@ public class LoginRestController {
 			JSONObject jsonObj = (JSONObject) parser.parse(obj);
 			if (jsonObj != null) {
 				try {
-					JSONObject result2 = loginServiceIntf.validateLogin(jsonObj);
+					result = loginServiceIntf.validateLogin(jsonObj);
 
-					if (result2 != null) {
-						result = result2;
+					if (result != null) {
 						UserDetails user = userDetailsService.loadUserByUsername(jsonObj.get("username").toString());
 						if (user != null) {
 							/*
@@ -152,7 +151,7 @@ public class LoginRestController {
 						}
 
 					} else {
-						result.put("error", "Invalid Credentials");
+						result.put("error", "");
 						result.put("token", "");
 					}
 
@@ -167,8 +166,8 @@ public class LoginRestController {
 		return result;
 	}
 
-	@RequestMapping(value = "/add-role", consumes = "application/json", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-	public JSONObject addRole(@RequestBody String role) {
+	@RequestMapping(value = "/add-role", consumes = "application/json", method = RequestMethod.POST)
+	public @ResponseBody String addRole(@RequestBody String role) {
 		JSONObject result = new JSONObject();
 		try {
 			try {
@@ -213,7 +212,7 @@ public class LoginRestController {
 			result.put("msg", e.getMessage());
 			e.printStackTrace();
 		}
-		return result;
+		return result.toJSONString();
 	}
 
 	public ManagementInfoService getManagementInfoService() {
@@ -257,3 +256,4 @@ public class LoginRestController {
 	}
 
 }
+
