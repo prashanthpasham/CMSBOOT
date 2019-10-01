@@ -68,6 +68,7 @@ public class LoginDaoImpl implements LoginDaoIntf {
 	@Override
 	public JSONObject menusByUserName(String userName) {
 		JSONObject response = new JSONObject();
+		try {
 		Users user = findUserByName(userName);
 		if (user != null) {
 			if (user.getStatus().equalsIgnoreCase("active")) {
@@ -79,15 +80,15 @@ public class LoginDaoImpl implements LoginDaoIntf {
 				// JSONArray menus = new JSONArray();
 				System.out.println("role.getRoleMenus()>>" + role.getRoleMenus().size());
 				Map<String, JSONObject> topMenus = new HashMap<String, JSONObject>();
-				List<Object[]> ls=entityManager.createNativeQuery("select m.MENU_ITEM_TITLE,m.MENU_ITEM_ID,(select m1.MENU_ITEM_TITLE||'@'||m1.MENU_ITEM_ID from MENU_ITEM m1 where m1.PARENT_MENU_ID=0 and m1.MENU_ITEM_ID=m.PARENT_MENU_ID) from MENU_ITEM m,ROLE_MENU_MAP rm where m.MENU_ITEM_ID=rm.MENU_ITEM_ID"
-						+" and  rm.ROLE_ID="+role.getRoleId()).getResultList();
+				List<Object[]> ls=entityManager.createNativeQuery("select m.MENU_ITEM_TITLE,m.MENU_ITEM_ID,(select m1.MENU_ITEM_TITLE||'@'||m1.MENU_ITEM_ID from MENU_ITEM m1 where  m1.MENU_ITEM_ID=m.PARENT_MENU_ID) from MENU_ITEM m,ROLE_MENU_MAP rm where m.MENU_ITEM_ID=rm.MENU_ITEM_ID"
+						+" and  rm.ROLE_ID="+role.getRoleId()+" and m.PARENT_MENU_ID>0").getResultList();
 				if (!ls.isEmpty()) {
 					for (Object[] obj : ls) {
 						JSONObject top = null;
 						JSONArray menus = null;
 						String s2[]=obj[2].toString().split("@");
 						if (topMenus.containsKey(s2[0].toString())) {
-							top = topMenus.get(obj[1].toString());
+							top = topMenus.get(s2[0].toString());
 							menus=(JSONArray)top.get("menus");
 						} else {
 							top = new JSONObject();
@@ -117,6 +118,9 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			}
 		} else {
 			response.put("error", "User not found");
+		}
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 		return response;
 	}
