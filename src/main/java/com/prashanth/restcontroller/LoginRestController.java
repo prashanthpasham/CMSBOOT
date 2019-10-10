@@ -1,7 +1,9 @@
 package com.prashanth.restcontroller;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.json.simple.JSONArray;
@@ -19,12 +21,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.prashanth.model.Address;
 import com.prashanth.model.MangementInfoDetails;
 import com.prashanth.model.MenuItem;
+import com.prashanth.model.OrganizationStructure;
 import com.prashanth.model.Role;
 import com.prashanth.model.RoleMenuMap;
 import com.prashanth.service.LoginServiceIntf;
@@ -133,9 +135,10 @@ public class LoginRestController {
 			JSONObject jsonObj = (JSONObject) parser.parse(obj);
 			if (jsonObj != null) {
 				try {
-					result = loginServiceIntf.validateLogin(jsonObj);
+					JSONObject result1 = loginServiceIntf.validateLogin(jsonObj);
 
-					if (result != null) {
+					if (result1 != null) {
+						result = result1;
 						UserDetails user = userDetailsService.loadUserByUsername(jsonObj.get("username").toString());
 						if (user != null) {
 							/*
@@ -151,7 +154,7 @@ public class LoginRestController {
 						}
 
 					} else {
-						result.put("error", "");
+						result.put("error", "Invalid Credentials");
 						result.put("token", "");
 					}
 
@@ -167,7 +170,7 @@ public class LoginRestController {
 	}
 
 	@RequestMapping(value = "/add-role", consumes = "application/json", method = RequestMethod.POST)
-	public @ResponseBody String addRole(@RequestBody String role) {
+	public JSONObject addRole(@RequestBody String role) {
 		JSONObject result = new JSONObject();
 		try {
 			try {
@@ -212,7 +215,56 @@ public class LoginRestController {
 			result.put("msg", e.getMessage());
 			e.printStackTrace();
 		}
-		return result.toJSONString();
+		return result;
+	}
+
+	List<OrganizationStructure> orgChart = new ArrayList<OrganizationStructure>();
+	@RequestMapping(value = "/add-orgstructure", consumes = "application/json", method = RequestMethod.POST)
+	public JSONObject createOrgChart(@RequestBody String input) {
+		JSONObject result = new JSONObject();
+        
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject obj = (JSONObject) parser.parse(input);
+			JSONArray hierarchy = (JSONArray) obj.get("hierarchy");
+			JSONObject view = (JSONObject) hierarchy.get(0);
+			OrganizationStructure org = new OrganizationStructure();
+			org.setHierarchy(view.get("id").toString());
+			org.setName(view.get("label").toString());
+			orgChart.add(org);
+			JSONArray children = (JSONArray) view.get("children");
+			addChilds(org.getName(), org.getHierarchy(),org.getName()+"/", children);
+			
+			for(OrganizationStructure org2 :orgChart) {
+				System.out.println(org2.getName()+"#"+org2.getHierarchy()+"#"+org2.getParentNames());
+			}
+			
+			result=loginServiceIntf.saveOrgChart(orgChart,Integer.parseInt(obj.get("ownerid").toString()));
+		} catch (Exception e) {
+			result.put("result", "fail");
+			result.put("error", e.getMessage());
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public void addChilds(String label, String id,String parentId, JSONArray children) {
+		
+		for (int k = 0; k < children.size(); k++) {
+			JSONObject child = (JSONObject) children.get(k);
+			OrganizationStructure org1 = new OrganizationStructure();
+			org1.setHierarchy(child.get("id").toString());
+			org1.setName(child.get("label").toString());
+			org1.setParentName(label);
+			org1.setParentHierarchy(id);
+			org1.setParentNames(parentId);
+			orgChart.add(org1);
+			JSONArray subChild = (JSONArray) child.get("children");
+			if (subChild.size() > 0) {
+				addChilds(org1.getName(), org1.getHierarchy(),org1.getParentNames()+org1.getName()+"/", subChild);
+			}
+
+		}
 	}
 
 	public ManagementInfoService getManagementInfoService() {
@@ -256,4 +308,3 @@ public class LoginRestController {
 	}
 
 }
-

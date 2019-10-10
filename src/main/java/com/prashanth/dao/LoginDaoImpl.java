@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import com.prashanth.model.MenuItem;
+import com.prashanth.model.OrganizationStructure;
 import com.prashanth.model.Role;
 import com.prashanth.model.RoleMenuMap;
 import com.prashanth.model.Users;
@@ -140,6 +141,27 @@ public class LoginDaoImpl implements LoginDaoIntf {
 				response.put("result", "fail");
 				response.put("msg", "Same Role exist");
 			}
+		} catch (Exception e) {
+			response.put("result", "fail");
+			response.put("msg", e.getMessage());
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@Override
+	public JSONObject saveOrgChart(List<OrganizationStructure> orgChart, int ownerId) {
+		JSONObject response = new JSONObject();
+		try {
+			//entityManager.getTransaction().begin();
+			for(OrganizationStructure org:orgChart) {
+				org.setOwnerId(ownerId);
+				entityManager.merge(org);
+			}
+			//entityManager.getTransaction().commit();
+			//entityManager.close();
+			response.put("result", "success");
+			response.put("msg", "");
 		} catch (Exception e) {
 			response.put("result", "fail");
 			response.put("msg", e.getMessage());
