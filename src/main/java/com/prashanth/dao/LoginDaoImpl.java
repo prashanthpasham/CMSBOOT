@@ -153,6 +153,15 @@ public class LoginDaoImpl implements LoginDaoIntf {
 	public JSONObject saveOrgChart(List<OrganizationStructure> orgChart, int ownerId) {
 		JSONObject response = new JSONObject();
 		try {
+			List<Object> ls1 = entityManager
+					.createNativeQuery(
+							"select NAME from ORGANIZATION_STRUCTURE where OWNER_ID=" + ownerId + " order by HIERACHY")
+					.getResultList();
+			if (!ls1.isEmpty()) {
+				int i=entityManager.createNativeQuery("delete from ORGANIZATION_STRUCTURE where OWNER_ID=" + ownerId)
+						.executeUpdate();
+				System.out.println(i+" deleted successfully!");
+			}
 			//entityManager.getTransaction().begin();
 			for(OrganizationStructure org:orgChart) {
 				org.setOwnerId(ownerId);
@@ -168,6 +177,62 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			e.printStackTrace();
 		}
 		return response;
+	}
+	@Override
+	public JSONObject fetchOrgChart(int ownerId) {
+		JSONObject response = new JSONObject();
+		JSONObject node = new JSONObject();
+		try {
+			
+				List<Object[]> ls = entityManager.createNativeQuery(
+						"select HIERACHY,NAME,PARENT_HIERARCHY,PARENT_NAME from ORGANIZATION_STRUCTURE where OWNER_ID="
+								+ ownerId + " order by HIERACHY")
+						.getResultList();
+				if (!ls.isEmpty()) {
+					for (Object[] obj : ls) {
+						if (node.isEmpty()) {
+							node.put("id", obj[0].toString());
+							node.put("label", obj[1].toString());
+							node.put("children", new JSONArray());
+							node.put("expanded", true);
+						} else {
+							addNode(node, obj[0].toString(), obj[1].toString(), obj[2].toString());
+						}
+
+					}
+				}
+		
+			response.put("msg", "");
+		} catch (Exception e) {
+			response.put("msg", e.getMessage());
+			e.printStackTrace();
+		}
+		response.put("hierarchy", node);
+		return response;
+	}
+	public void  addNode(JSONObject node,String id,String label,String pid) {
+		try {
+			JSONObject sub = new JSONObject();
+			sub.put("id", id);
+			sub.put("label", label);
+			sub.put("children", new JSONArray());
+			sub.put("expanded", true);
+			JSONArray child = (JSONArray) node.get("children");
+			if (node.get("id").toString().equals(pid)) {
+				child.add(sub);
+			} else {
+				for (int k = 0; k < child.size(); k++) {
+					JSONObject sub1 = (JSONObject) child.get(k);
+					if (sub1.get("id").toString().equals(pid)) {
+						((JSONArray) sub1.get("children")).add(sub);
+					} else {
+						addNode(sub1, id, label, pid);
+					}
+				}
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

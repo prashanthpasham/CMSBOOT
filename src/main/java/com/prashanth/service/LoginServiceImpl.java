@@ -50,4 +50,10 @@ public class LoginServiceImpl implements LoginServiceIntf {
 		return loginDaoIntf.saveOrgChart(orgChart, ownerId);
 	}
 
+	@Override
+	public JSONObject fetchOrgChart(int ownerId) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.fetchOrgChart(ownerId);
+	}
+
 }

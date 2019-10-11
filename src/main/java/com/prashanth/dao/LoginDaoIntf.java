@@ -14,4 +14,5 @@ public interface LoginDaoIntf {
 	public JSONObject menusByUserName(String userName);
 	public JSONObject persistRole(Role r);
 	public JSONObject saveOrgChart(List<OrganizationStructure> orgChart, int ownerId);
+	public JSONObject fetchOrgChart(int ownerId);
 }

@@ -16,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,7 +51,7 @@ public class LoginRestController {
 	@Autowired
 	private UserDetailsServiceImpl userDetailsService;
 	private JSONParser parser = new JSONParser();
-
+	private List<OrganizationStructure> orgChart = new ArrayList<OrganizationStructure>();
 	@RequestMapping(value = "/management-info", consumes = "application/json", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
 	public JSONObject addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
@@ -218,14 +219,16 @@ public class LoginRestController {
 		return result;
 	}
 
-	List<OrganizationStructure> orgChart = new ArrayList<OrganizationStructure>();
+	
 	@RequestMapping(value = "/add-orgstructure", consumes = "application/json", method = RequestMethod.POST)
 	public JSONObject createOrgChart(@RequestBody String input) {
 		JSONObject result = new JSONObject();
-        
+		
 		try {
+			   orgChart.clear();
 			JSONParser parser = new JSONParser();
 			JSONObject obj = (JSONObject) parser.parse(input);
+			System.out.println(obj.toJSONString());
 			JSONArray hierarchy = (JSONArray) obj.get("hierarchy");
 			JSONObject view = (JSONObject) hierarchy.get(0);
 			OrganizationStructure org = new OrganizationStructure();
@@ -234,10 +237,12 @@ public class LoginRestController {
 			orgChart.add(org);
 			JSONArray children = (JSONArray) view.get("children");
 			addChilds(org.getName(), org.getHierarchy(),org.getName()+"/", children);
-			
-			for(OrganizationStructure org2 :orgChart) {
-				System.out.println(org2.getName()+"#"+org2.getHierarchy()+"#"+org2.getParentNames());
-			}
+			System.out.println("orgChart>>"+orgChart.size());
+			/*
+			 * for(OrganizationStructure org2 :orgChart) {
+			 * System.out.println(org2.getName()+"#"+org2.getHierarchy()+"#"+org2.
+			 * getParentNames()); }
+			 */
 			
 			result=loginServiceIntf.saveOrgChart(orgChart,Integer.parseInt(obj.get("ownerid").toString()));
 		} catch (Exception e) {
@@ -247,7 +252,7 @@ public class LoginRestController {
 		}
 		return result;
 	}
-
+	
 	public void addChilds(String label, String id,String parentId, JSONArray children) {
 		
 		for (int k = 0; k < children.size(); k++) {
@@ -266,7 +271,12 @@ public class LoginRestController {
 
 		}
 	}
-
+	@RequestMapping(value = "/org-structure/{ownerId}", method = RequestMethod.GET)
+	public JSONObject OrgChart(@PathVariable("ownerId") int ownerId) {
+		
+		return loginServiceIntf.fetchOrgChart(ownerId);
+		
+	}
 	public ManagementInfoService getManagementInfoService() {
 		return managementInfoService;
 	}
