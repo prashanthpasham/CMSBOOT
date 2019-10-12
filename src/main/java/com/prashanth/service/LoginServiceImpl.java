@@ -1,5 +1,7 @@
 package com.prashanth.service;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.json.simple.JSONObject;
@@ -7,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.prashanth.dao.LoginDaoIntf;
+import com.prashanth.model.OrganizationStructure;
 import com.prashanth.model.Role;
 
 @Service
@@ -39,6 +42,18 @@ public class LoginServiceImpl implements LoginServiceIntf {
 	public JSONObject persistRole(Role r) {
 		// TODO Auto-generated method stub
 		return loginDaoIntf.persistRole(r);
+	}
+
+	@Override
+	public JSONObject saveOrgChart(List<OrganizationStructure> orgChart, int ownerId) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.saveOrgChart(orgChart, ownerId);
+	}
+
+	@Override
+	public JSONObject fetchOrgChart(int ownerId) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.fetchOrgChart(ownerId);
 	}
 
 }
