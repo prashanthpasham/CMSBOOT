@@ -13,4 +13,8 @@ public JSONObject menusByUserName(String userName);
 public JSONObject persistRole(Role r);
 public JSONObject saveOrgChart(List<OrganizationStructure> orgChart, int ownerId);
 public JSONObject fetchOrgChart(int ownerId);
+public JSONObject getDesignations(int ownerId);
+public JSONObject saveDepartment(JSONObject deptObj);
+public JSONObject departmentList(int ownerId);
+public JSONObject deleteDepartment(int deptId);
 }

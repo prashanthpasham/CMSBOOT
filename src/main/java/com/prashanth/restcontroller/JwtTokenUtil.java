@@ -15,7 +15,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtTokenUtil {
-	public static final long JWT_TOKEN_VALIDITY = 600;
+	public static final long JWT_TOKEN_VALIDITY = 3600;
 
 	@Value("${jwt.secret}")
 	private String secret;

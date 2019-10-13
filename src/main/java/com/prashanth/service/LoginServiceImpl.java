@@ -56,4 +56,27 @@ public class LoginServiceImpl implements LoginServiceIntf {
 		return loginDaoIntf.fetchOrgChart(ownerId);
 	}
 
+	@Override
+	public JSONObject getDesignations(int ownerId) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.getDesignations(ownerId);
+	}
+
+	@Override
+	public JSONObject saveDepartment(JSONObject deptObj) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.saveDepartment(deptObj);
+	}
+
+	@Override
+	public JSONObject departmentList(int ownerId) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.departmentList(ownerId);
+	}
+	
+	@Override
+	public JSONObject deleteDepartment(int deptId) {
+		return loginDaoIntf.deleteDepartment(deptId);
+	}
+
 }

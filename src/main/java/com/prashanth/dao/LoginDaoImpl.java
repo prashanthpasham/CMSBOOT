@@ -13,7 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
-import com.prashanth.model.MenuItem;
+import com.prashanth.model.Department;
 import com.prashanth.model.OrganizationStructure;
 import com.prashanth.model.Role;
 import com.prashanth.model.RoleMenuMap;
@@ -70,57 +70,58 @@ public class LoginDaoImpl implements LoginDaoIntf {
 	public JSONObject menusByUserName(String userName) {
 		JSONObject response = new JSONObject();
 		try {
-		Users user = findUserByName(userName);
-		if (user != null) {
-			if (user.getStatus().equalsIgnoreCase("active")) {
+			Users user = findUserByName(userName);
+			if (user != null) {
+				if (user.getStatus().equalsIgnoreCase("active")) {
 
-				Role role = user.getRoleId();
-				response.put("username", user.getUserName());
-				response.put("role", role.getRole());
-				response.put("ownerid", user.getOwnerId());
-				// JSONArray menus = new JSONArray();
-				System.out.println("role.getRoleMenus()>>" + role.getRoleMenus().size());
-				Map<String, JSONObject> topMenus = new HashMap<String, JSONObject>();
-				List<Object[]> ls=entityManager.createNativeQuery("select m.MENU_ITEM_TITLE,m.MENU_ITEM_ID,(select m1.MENU_ITEM_TITLE||'@'||m1.MENU_ITEM_ID from MENU_ITEM m1 where  m1.MENU_ITEM_ID=m.PARENT_MENU_ID) from MENU_ITEM m,ROLE_MENU_MAP rm where m.MENU_ITEM_ID=rm.MENU_ITEM_ID"
-						+" and  rm.ROLE_ID="+role.getRoleId()+" and m.PARENT_MENU_ID>0").getResultList();
-				if (!ls.isEmpty()) {
-					for (Object[] obj : ls) {
-						JSONObject top = null;
-						JSONArray menus = null;
-						String s2[]=obj[2].toString().split("@");
-						if (topMenus.containsKey(s2[0].toString())) {
-							top = topMenus.get(s2[0].toString());
-							menus=(JSONArray)top.get("menus");
-						} else {
-							top = new JSONObject();
-							top.put("menutitle", s2[0].toString());
-							top.put("menuid", s2[1].toString());
-							menus=new JSONArray();
+					Role role = user.getRoleId();
+					response.put("username", user.getUserName());
+					response.put("role", role.getRole());
+					response.put("ownerid", user.getOwnerId());
+					// JSONArray menus = new JSONArray();
+					System.out.println("role.getRoleMenus()>>" + role.getRoleMenus().size());
+					Map<String, JSONObject> topMenus = new HashMap<String, JSONObject>();
+					List<Object[]> ls = entityManager.createNativeQuery(
+							"select m.MENU_ITEM_TITLE,m.MENU_ITEM_ID,(select m1.MENU_ITEM_TITLE||'@'||m1.MENU_ITEM_ID from MENU_ITEM m1 where  m1.MENU_ITEM_ID=m.PARENT_MENU_ID) from MENU_ITEM m,ROLE_MENU_MAP rm where m.MENU_ITEM_ID=rm.MENU_ITEM_ID"
+									+ " and  rm.ROLE_ID=" + role.getRoleId() + " and m.PARENT_MENU_ID>0")
+							.getResultList();
+					if (!ls.isEmpty()) {
+						for (Object[] obj : ls) {
+							JSONObject top = null;
+							JSONArray menus = null;
+							String s2[] = obj[2].toString().split("@");
+							if (topMenus.containsKey(s2[0].toString())) {
+								top = topMenus.get(s2[0].toString());
+								menus = (JSONArray) top.get("menus");
+							} else {
+								top = new JSONObject();
+								top.put("menutitle", s2[0].toString());
+								top.put("menuid", s2[1].toString());
+								menus = new JSONArray();
+							}
+							JSONObject menu = new JSONObject();
+							menu.put("menutitle", obj[0].toString());
+							menu.put("menuid", obj[1].toString());
+							menus.add(menu);
+							top.put("menus", menus);
+							topMenus.put(s2[0].toString(), top);
 						}
-						JSONObject menu = new JSONObject();
-						menu.put("menutitle", obj[0].toString());
-						menu.put("menuid", obj[1].toString());
-						menus.add(menu);
-						top.put("menus", menus);
-						topMenus.put(s2[0].toString(), top);
 					}
-				}
-				
 
-				JSONArray topArray = new JSONArray();
-				for (Map.Entry<String, JSONObject> me : topMenus.entrySet()) {
-					topArray.add(me.getValue());
-				}
-				response.put("links", topArray);
-				response.put("error", "");
+					JSONArray topArray = new JSONArray();
+					for (Map.Entry<String, JSONObject> me : topMenus.entrySet()) {
+						topArray.add(me.getValue());
+					}
+					response.put("links", topArray);
+					response.put("error", "");
 
+				} else {
+					response.put("error", "User is inactive");
+				}
 			} else {
-				response.put("error", "User is inactive");
+				response.put("error", "User not found");
 			}
-		} else {
-			response.put("error", "User not found");
-		}
-		}catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return response;
@@ -162,17 +163,17 @@ public class LoginDaoImpl implements LoginDaoIntf {
 							"select NAME from ORGANIZATION_STRUCTURE where OWNER_ID=" + ownerId + " order by HIERACHY")
 					.getResultList();
 			if (!ls1.isEmpty()) {
-				int i=entityManager.createNativeQuery("delete from ORGANIZATION_STRUCTURE where OWNER_ID=" + ownerId)
+				int i = entityManager.createNativeQuery("delete from ORGANIZATION_STRUCTURE where OWNER_ID=" + ownerId)
 						.executeUpdate();
-				System.out.println(i+" deleted successfully!");
+				System.out.println(i + " deleted successfully!");
 			}
-			//entityManager.getTransaction().begin();
-			for(OrganizationStructure org:orgChart) {
+			// entityManager.getTransaction().begin();
+			for (OrganizationStructure org : orgChart) {
 				org.setOwnerId(ownerId);
 				entityManager.merge(org);
 			}
-			//entityManager.getTransaction().commit();
-			//entityManager.close();
+			// entityManager.getTransaction().commit();
+			// entityManager.close();
 			response.put("result", "success");
 			response.put("msg", "");
 		} catch (Exception e) {
@@ -182,30 +183,31 @@ public class LoginDaoImpl implements LoginDaoIntf {
 		}
 		return response;
 	}
+
 	@Override
 	public JSONObject fetchOrgChart(int ownerId) {
 		JSONObject response = new JSONObject();
 		JSONObject node = new JSONObject();
 		try {
-			
-				List<Object[]> ls = entityManager.createNativeQuery(
-						"select HIERACHY,NAME,PARENT_HIERARCHY,PARENT_NAME from ORGANIZATION_STRUCTURE where OWNER_ID="
-								+ ownerId + " order by HIERACHY")
-						.getResultList();
-				if (!ls.isEmpty()) {
-					for (Object[] obj : ls) {
-						if (node.isEmpty()) {
-							node.put("id", obj[0].toString());
-							node.put("label", obj[1].toString());
-							node.put("children", new JSONArray());
-							node.put("expanded", true);
-						} else {
-							addNode(node, obj[0].toString(), obj[1].toString(), obj[2].toString());
-						}
 
+			List<Object[]> ls = entityManager.createNativeQuery(
+					"select HIERACHY,NAME,PARENT_HIERARCHY,PARENT_NAME from ORGANIZATION_STRUCTURE where OWNER_ID="
+							+ ownerId + " order by HIERACHY")
+					.getResultList();
+			if (!ls.isEmpty()) {
+				for (Object[] obj : ls) {
+					if (node.isEmpty()) {
+						node.put("id", obj[0].toString());
+						node.put("label", obj[1].toString());
+						node.put("children", new JSONArray());
+						node.put("expanded", true);
+					} else {
+						addNode(node, obj[0].toString(), obj[1].toString(), obj[2].toString());
 					}
+
 				}
-		
+			}
+
 			response.put("msg", "");
 		} catch (Exception e) {
 			response.put("msg", e.getMessage());
@@ -214,7 +216,8 @@ public class LoginDaoImpl implements LoginDaoIntf {
 		response.put("hierarchy", node);
 		return response;
 	}
-	public void  addNode(JSONObject node,String id,String label,String pid) {
+
+	public void addNode(JSONObject node, String id, String label, String pid) {
 		try {
 			JSONObject sub = new JSONObject();
 			sub.put("id", id);
@@ -234,9 +237,102 @@ public class LoginDaoImpl implements LoginDaoIntf {
 					}
 				}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public JSONObject getDesignations(int ownerId) {
+
+		JSONObject response = new JSONObject();
+		JSONArray array = new JSONArray();
+		try {
+
+			List<Object[]> ls = entityManager.createNativeQuery(
+					"select ORGANIZATION_ID,HIERACHY,NAME,PARENT_HIERARCHY,PARENT_NAMES from ORGANIZATION_STRUCTURE where OWNER_ID="
+							+ ownerId + " order by HIERACHY")
+					.getResultList();
+			if (!ls.isEmpty()) {
+				for (Object[] obj : ls) {
+					JSONObject node = new JSONObject();
+					node.put("id", obj[0].toString());
+					node.put("hierarchy", obj[1].toString());
+					node.put("label", obj[2].toString());
+					node.put("parentNames", obj[3] != null ? obj[3].toString() : "NA");
+					array.add(node);
+				}
+			}
+
+			response.put("msg", "");
+		} catch (Exception e) {
+			response.put("msg", e.getMessage());
+			e.printStackTrace();
+		}
+		response.put("hierarchy", array);
+		return response;
+
+	}
+
+	@Override
+	public JSONObject saveDepartment(JSONObject deptObj) {
+		JSONObject response = new JSONObject();
+		try {
+
+			Department dept = new Department();
+			dept.setDepartmentName(deptObj.get("deptName").toString());
+			dept.setDeptCode(deptObj.get("deptCode").toString());
+			dept.setOwnerId(Integer.parseInt(deptObj.get("ownerId").toString()));
+			int deptId=Integer.parseInt(deptObj.get("deptId").toString());
+			if(deptId>0) {
+				dept.setDepartmentId(deptId);
+				entityManager.merge(dept);
+			}else
+			entityManager.persist(dept);
+			response.put("result", "success");
+		} catch (Exception e) {
+			response.put("result", "fail");
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	@Override
+	public JSONObject departmentList(int ownerId) {
+		JSONObject response = new JSONObject();
+		JSONArray array = new JSONArray();
+		try {
+			List<Department> deptList = entityManager.createQuery("from Department where ownerId=" + ownerId)
+					.getResultList();
+			if (!deptList.isEmpty()) {
+				for (Department dept : deptList) {
+					JSONObject obj = new JSONObject();
+					obj.put("deptId", dept.getDepartmentId());
+					obj.put("deptName", dept.getDepartmentName());
+					obj.put("deptCode", dept.getDeptCode());
+					array.add(obj);
+				}
+			}
+			response.put("result", "success");
+		} catch (Exception e) {
+			response.put("result", "fail");
+			e.printStackTrace();
+		}
+		response.put("department", array);
+		return response;
+	}
+
+	@Override
+	public JSONObject deleteDepartment(int deptId) {
+		JSONObject response = new JSONObject();
+		try {
+			entityManager.createNativeQuery("delete from department where DEPARTMENT_ID="+deptId).executeUpdate();
+			response.put("result", "success");
+		}catch (Exception e) {
+			response.put("result", "fail");
+			e.printStackTrace();
+		}
+		return response;
 	}
 
 }

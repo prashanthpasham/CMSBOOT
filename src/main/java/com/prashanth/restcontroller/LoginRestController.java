@@ -52,6 +52,7 @@ public class LoginRestController {
 	private UserDetailsServiceImpl userDetailsService;
 	private JSONParser parser = new JSONParser();
 	private List<OrganizationStructure> orgChart = new ArrayList<OrganizationStructure>();
+
 	@RequestMapping(value = "/management-info", consumes = "application/json", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
 	public JSONObject addManagementInfo(@RequestBody String management) {
 		JSONObject response = new JSONObject();
@@ -219,13 +220,12 @@ public class LoginRestController {
 		return result;
 	}
 
-	
 	@RequestMapping(value = "/add-orgstructure", consumes = "application/json", method = RequestMethod.POST)
 	public JSONObject createOrgChart(@RequestBody String input) {
 		JSONObject result = new JSONObject();
-		
+
 		try {
-			   orgChart.clear();
+			orgChart.clear();
 			JSONParser parser = new JSONParser();
 			JSONObject obj = (JSONObject) parser.parse(input);
 			System.out.println(obj.toJSONString());
@@ -236,15 +236,15 @@ public class LoginRestController {
 			org.setName(view.get("label").toString());
 			orgChart.add(org);
 			JSONArray children = (JSONArray) view.get("children");
-			addChilds(org.getName(), org.getHierarchy(),org.getName()+"/", children);
-			System.out.println("orgChart>>"+orgChart.size());
+			addChilds(org.getName(), org.getHierarchy(), org.getName() + "/", children);
+			System.out.println("orgChart>>" + orgChart.size());
 			/*
 			 * for(OrganizationStructure org2 :orgChart) {
 			 * System.out.println(org2.getName()+"#"+org2.getHierarchy()+"#"+org2.
 			 * getParentNames()); }
 			 */
-			
-			result=loginServiceIntf.saveOrgChart(orgChart,Integer.parseInt(obj.get("ownerid").toString()));
+
+			result = loginServiceIntf.saveOrgChart(orgChart, Integer.parseInt(obj.get("ownerid").toString()));
 		} catch (Exception e) {
 			result.put("result", "fail");
 			result.put("error", e.getMessage());
@@ -252,9 +252,9 @@ public class LoginRestController {
 		}
 		return result;
 	}
-	
-	public void addChilds(String label, String id,String parentId, JSONArray children) {
-		
+
+	public void addChilds(String label, String id, String parentId, JSONArray children) {
+
 		for (int k = 0; k < children.size(); k++) {
 			JSONObject child = (JSONObject) children.get(k);
 			OrganizationStructure org1 = new OrganizationStructure();
@@ -266,17 +266,50 @@ public class LoginRestController {
 			orgChart.add(org1);
 			JSONArray subChild = (JSONArray) child.get("children");
 			if (subChild.size() > 0) {
-				addChilds(org1.getName(), org1.getHierarchy(),org1.getParentNames()+org1.getName()+"/", subChild);
+				addChilds(org1.getName(), org1.getHierarchy(), org1.getParentNames() + org1.getName() + "/", subChild);
 			}
 
 		}
 	}
+
 	@RequestMapping(value = "/org-structure/{ownerId}", method = RequestMethod.GET)
 	public JSONObject OrgChart(@PathVariable("ownerId") int ownerId) {
-		
+
 		return loginServiceIntf.fetchOrgChart(ownerId);
-		
+
 	}
+
+	@RequestMapping(value = "/designation/{ownerId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public JSONObject designations(@PathVariable("ownerId") int ownerId) {
+
+		return loginServiceIntf.getDesignations(ownerId);
+	}
+
+	@RequestMapping(value = "/add-department", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public JSONObject saveDepartment(@RequestBody String input) {
+		JSONObject parser = new JSONObject();
+		try {
+			parser = (JSONObject) new JSONParser().parse(input);
+			return loginServiceIntf.saveDepartment(parser);
+
+		} catch (ParseException e) {
+			parser.put("result", "fail");
+			e.printStackTrace();
+		}
+		return parser;
+	}
+
+	@RequestMapping(value = "/department/{ownerId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public JSONObject departmentList(@PathVariable("ownerId") int ownerId) {
+
+		return loginServiceIntf.departmentList(ownerId);
+	}
+	@RequestMapping(value = "/delete-department/{deptId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public JSONObject deleteDepartment(@PathVariable("deptId") int deptId) {
+
+		return loginServiceIntf.deleteDepartment(deptId);
+	}
+
 	public ManagementInfoService getManagementInfoService() {
 		return managementInfoService;
 	}

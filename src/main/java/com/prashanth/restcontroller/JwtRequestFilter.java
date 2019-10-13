@@ -37,17 +37,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
-		
-		Enumeration en = request.getHeaderNames();
-		while (en.hasMoreElements()) {
-			String key=en.nextElement().toString();
-			System.out.println("key>>"+key);
-			System.out.println("request>>" + request.getHeader(key));
-		}
-		 
-			
-	
-
+		  // response.addHeader("Access-Control-Allow-Origin", "*");
+	        response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+	        response.addHeader("Access-Control-Max-Age", "3600");
+	        response.addHeader("Access-Control-Allow-Credentials", "true");
+	        response.addHeader("Access-Control-Allow-Headers", "authorization, content-type, xsrf-token");
+	        response.addHeader("Access-Control-Expose-Headers", "xsrf-token");
+	       
+	 
 		final String requestTokenHeader = request.getHeader("Authorization");
 		System.out.println("request>>"+requestTokenHeader);
 		String username = null;
@@ -57,7 +54,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		// JSONObject obj = new JSONObject();
 		HttpSession session = request.getSession();
 		if (requestTokenHeader != null) {
-			if (requestTokenHeader.startsWith("Bearer")) {
+			if (requestTokenHeader.startsWith("Bearer ")) {
 				logger.info("requestTokenHeader>>"+requestTokenHeader);
 				jwtToken = requestTokenHeader.substring(7).trim();
 				try {
@@ -99,7 +96,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 				SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 			}
 		}
-
+		 if (request.getMethod().equals("OPTIONS")) {
+	            response.setStatus(HttpServletResponse.SC_ACCEPTED);
+	            return;
+	        }
 		chain.doFilter(request, response);
 	}
 
