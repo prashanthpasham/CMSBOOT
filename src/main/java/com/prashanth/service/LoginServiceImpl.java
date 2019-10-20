@@ -79,4 +79,16 @@ public class LoginServiceImpl implements LoginServiceIntf {
 		return loginDaoIntf.deleteDepartment(deptId);
 	}
 
+	@Override
+	public JSONObject saveEmployee(JSONObject empObj) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.saveEmployee(empObj);
+	}
+
+	@Override
+	public JSONObject employeeList(JSONObject empObj) {
+		// TODO Auto-generated method stub
+		return loginDaoIntf.employeeList(empObj);
+	}
+
 }

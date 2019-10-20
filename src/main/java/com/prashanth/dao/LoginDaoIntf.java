@@ -19,4 +19,6 @@ public interface LoginDaoIntf {
 	public JSONObject saveDepartment(JSONObject deptObj);
 	public JSONObject departmentList(int ownerId);
 	public JSONObject deleteDepartment(int deptId);
+	public JSONObject saveEmployee(JSONObject empObj);
+	public JSONObject employeeList(JSONObject empObj);
 }

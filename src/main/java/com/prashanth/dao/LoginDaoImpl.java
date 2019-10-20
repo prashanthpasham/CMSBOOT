@@ -1,11 +1,16 @@
 package com.prashanth.dao;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -14,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import com.prashanth.model.Department;
+import com.prashanth.model.Employee;
+import com.prashanth.model.EmployeeDetails;
 import com.prashanth.model.OrganizationStructure;
 import com.prashanth.model.Role;
 import com.prashanth.model.RoleMenuMap;
@@ -332,6 +339,108 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			response.put("result", "fail");
 			e.printStackTrace();
 		}
+		return response;
+	}
+
+	@Override
+	public JSONObject saveEmployee(JSONObject empObj) {
+		JSONObject response = new JSONObject();
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+			Employee emp = new Employee();
+			emp.setEmployeeCode(empObj.get("employeeCode").toString().trim());
+			emp.setEmployeeName(empObj.get("employeeName").toString().trim());
+			emp.setCreatedDate(new Date());
+			emp.setCreatedUser(empObj.get("createdUserName").toString().trim());
+			emp.setDepartment(new Department(Integer.parseInt(empObj.get("deptId").toString())));
+			emp.setDesignation(Integer.parseInt(empObj.get("designationId").toString()));
+			emp.setOwnerId(Integer.parseInt(empObj.get("ownerId").toString()));
+			emp.setStatus(empObj.get("status").toString());
+			if(empObj.get("joinedDate")!=null && empObj.get("joinedDate").toString().trim().length()>0)
+			emp.setJoinedDate(sdf.parse(empObj.get("joinedDate").toString()));
+			if(empObj.get("photo")!=null && empObj.get("photo").toString().trim().length()>0)
+				emp.setPhoto(new String(empObj.get("photo").toString().trim()).getBytes());
+			Set<EmployeeDetails> empDetails = new HashSet<EmployeeDetails>();
+			JSONArray expList = (JSONArray) empObj.get("experienceDetails");
+			for (int k = 0; k < expList.size(); k++) {
+				JSONObject empData = (JSONObject) expList.get(k);
+				EmployeeDetails ed = new EmployeeDetails();
+				ed.setInstitute(empData.get("institute").toString().trim());
+				ed.setStartYear(sdf.parse(empData.get("startYear").toString()));
+				ed.setEndYear(sdf.parse(empData.get("endYear").toString()));
+				empDetails.add(ed);
+			}
+			emp.setEmployeeDetailsSet(empDetails);
+			entityManager.persist(emp);
+			response.put("result", "success");
+		}catch (Exception e) {
+			response.put("result", "fail");
+			e.printStackTrace();
+		}
+		return response;
+	}
+	@Override
+	public JSONObject employeeList(JSONObject empObj) {
+		JSONObject response = new JSONObject();
+		JSONArray employees=new JSONArray();
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+			String hql = " from Employee e where e.ownerId=" + Integer.parseInt(empObj.get("ownerId").toString());
+			if (empObj.get("employeeCode") != null && empObj.get("employeeCode").toString().trim().length() > 0) {
+				hql += " and e.employeeCode='" + empObj.get("employeeCode").toString().trim() + "'";
+			}
+			if (empObj.get("employeeName") != null && empObj.get("employeeName").toString().trim().length() > 0) {
+				hql += " and e.employeeName='" + empObj.get("employeeName").toString().trim() + "'";
+			}
+			if (empObj.get("status") != null && empObj.get("status").toString().trim().length() > 0) {
+				hql += " and e.status='" + empObj.get("status").toString().trim() + "'";
+			}
+			if (empObj.get("designation") != null && empObj.get("designation").toString().trim().length() > 0) {
+				hql += " and e.designation=" + Integer.parseInt(empObj.get("designation").toString().trim());
+			}
+			if (empObj.get("department") != null && empObj.get("department").toString().trim().length() > 0) {
+				hql += " and e.department.departmentId=" + Integer.parseInt(empObj.get("department").toString().trim());
+			}
+			hql += " order by e.employeeId";
+			Query qry = entityManager.createQuery(hql);
+			if (empObj.get("records") != null && empObj.get("records").toString().trim().length() > 0) {
+				qry.setMaxResults(Integer.parseInt(empObj.get("records").toString().trim()));
+			}
+			List<Employee> empList = qry.getResultList();
+			if(!empList.isEmpty()) {
+				for(Employee emp:empList) {
+					JSONObject obj=new JSONObject();
+					obj.put("employeeId", emp.getEmployeeId());
+					obj.put("employeeCode", emp.getEmployeeCode());
+					obj.put("employeeName", emp.getEmployeeName());
+					obj.put("status", emp.getStatus());
+					obj.put("designationId", emp.getDesignation());
+					obj.put("deptId", emp.getDepartment().getDepartmentId());
+					obj.put("deptName", emp.getDepartment().getDepartmentName());
+					obj.put("joinedDate", emp.getJoinedDate()!=null?sdf.format(emp.getJoinedDate()):"");
+					obj.put("photo", emp.getPhoto()!=null?new String(emp.getPhoto()):"");
+					obj.put("createdOn", sdf.format(emp.getCreatedDate()));
+					obj.put("createdBy", emp.getCreatedUser());
+					JSONArray expList= new JSONArray();
+					for(EmployeeDetails edt:emp.getEmployeeDetailsSet())
+					{
+						JSONObject ob=new JSONObject();
+						ob.put("empDetailsId", edt.getEmpDetailsId());
+						ob.put("institute", edt.getInstitute());
+						ob.put("startYear", sdf.format(edt.getStartYear()));
+						ob.put("endYear", sdf.format(edt.getEndYear()));
+						expList.add(ob);
+					}
+					obj.put("workExperience", expList);
+					employees.add(obj);
+				}
+			}
+			response.put("result", "success");
+		} catch (Exception e) {
+			response.put("result", "fail");
+			e.printStackTrace();
+		}
+		response.put("employees",employees);
 		return response;
 	}
 

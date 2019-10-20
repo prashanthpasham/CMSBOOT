@@ -39,7 +39,8 @@ public class Employee {
 	private Set<EmployeeDetails> employeeDetailsSet;
 	private Department department;
 	private String employeeType;
-
+    private byte[] photo;
+    private String status;
 	@Id
 	@SequenceGenerator(sequenceName = "seq_employee", allocationSize = 1, name = "seq_employee")
 	@GeneratedValue(generator = "seq_employee", strategy = GenerationType.SEQUENCE)
@@ -217,5 +218,24 @@ public class Employee {
 	public void setEmployeeType(String employeeType) {
 		this.employeeType = employeeType;
 	}
+
+	@Column(name = "photo")
+	public byte[] getPhoto() {
+		return photo;
+	}
+
+	public void setPhoto(byte[] photo) {
+		this.photo = photo;
+	}
+
+	@Column(name = "STATUS")
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
 
 }

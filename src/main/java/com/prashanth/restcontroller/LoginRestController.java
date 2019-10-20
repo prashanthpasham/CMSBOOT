@@ -309,7 +309,33 @@ public class LoginRestController {
 
 		return loginServiceIntf.deleteDepartment(deptId);
 	}
+	
+	@RequestMapping(value = "/add-employee", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public JSONObject saveEmployee(@RequestBody String input) {
+		JSONObject parser = new JSONObject();
+		try {
+			parser = (JSONObject) new JSONParser().parse(input);
+			return loginServiceIntf.saveEmployee(parser);
 
+		} catch (ParseException e) {
+			parser.put("result", "fail");
+			e.printStackTrace();
+		}
+		return parser;
+	}
+	@RequestMapping(value = "/employee-list", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public JSONObject employeeList(@RequestBody String input) {
+		JSONObject parser = new JSONObject();
+		try {
+			parser = (JSONObject) new JSONParser().parse(input);
+			return loginServiceIntf.employeeList(parser);
+
+		} catch (ParseException e) {
+			parser.put("result", "fail");
+			e.printStackTrace();
+		}
+		return parser;
+	}
 	public ManagementInfoService getManagementInfoService() {
 		return managementInfoService;
 	}

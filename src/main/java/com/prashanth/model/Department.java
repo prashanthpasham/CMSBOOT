@@ -16,6 +16,14 @@ public class Department {
 	private String departmentName;
 	private int ownerId;
 
+	public Department() {
+
+	}
+
+	public Department(int departmentId) {
+		this.departmentId = departmentId;
+	}
+
 	@Id
 	@SequenceGenerator(sequenceName = "seq_department", allocationSize = 1, name = "seq_department")
 	@GeneratedValue(generator = "seq_department", strategy = GenerationType.SEQUENCE)
@@ -54,6 +62,5 @@ public class Department {
 	public void setOwnerId(int ownerId) {
 		this.ownerId = ownerId;
 	}
-	
 
 }
