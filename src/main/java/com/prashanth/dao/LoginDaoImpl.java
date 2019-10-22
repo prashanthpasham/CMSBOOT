@@ -290,12 +290,12 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			dept.setDepartmentName(deptObj.get("deptName").toString());
 			dept.setDeptCode(deptObj.get("deptCode").toString());
 			dept.setOwnerId(Integer.parseInt(deptObj.get("ownerId").toString()));
-			int deptId=Integer.parseInt(deptObj.get("deptId").toString());
-			if(deptId>0) {
+			int deptId = Integer.parseInt(deptObj.get("deptId").toString());
+			if (deptId > 0) {
 				dept.setDepartmentId(deptId);
 				entityManager.merge(dept);
-			}else
-			entityManager.persist(dept);
+			} else
+				entityManager.persist(dept);
 			response.put("result", "success");
 		} catch (Exception e) {
 			response.put("result", "fail");
@@ -333,9 +333,9 @@ public class LoginDaoImpl implements LoginDaoIntf {
 	public JSONObject deleteDepartment(int deptId) {
 		JSONObject response = new JSONObject();
 		try {
-			entityManager.createNativeQuery("delete from department where DEPARTMENT_ID="+deptId).executeUpdate();
+			entityManager.createNativeQuery("delete from department where DEPARTMENT_ID=" + deptId).executeUpdate();
 			response.put("result", "success");
-		}catch (Exception e) {
+		} catch (Exception e) {
 			response.put("result", "fail");
 			e.printStackTrace();
 		}
@@ -348,6 +348,8 @@ public class LoginDaoImpl implements LoginDaoIntf {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 			Employee emp = new Employee();
+			 if(empObj.get("employeeId")!=null)
+			 emp.setEmployeeId(Integer.parseInt(empObj.get("employeeId").toString()));
 			emp.setEmployeeCode(empObj.get("employeeCode").toString().trim());
 			emp.setEmployeeName(empObj.get("employeeName").toString().trim());
 			emp.setCreatedDate(new Date());
@@ -356,12 +358,20 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			emp.setDesignation(Integer.parseInt(empObj.get("designationId").toString()));
 			emp.setOwnerId(Integer.parseInt(empObj.get("ownerId").toString()));
 			emp.setStatus(empObj.get("status").toString());
-			if(empObj.get("joinedDate")!=null && empObj.get("joinedDate").toString().trim().length()>0)
-			emp.setJoinedDate(sdf.parse(empObj.get("joinedDate").toString()));
-			if(empObj.get("photo")!=null && empObj.get("photo").toString().trim().length()>0)
+			if (empObj.get("reportingTo") != null)
+				emp.setReportingTo(Integer.parseInt(empObj.get("reportingTo").toString()));
+			if (empObj.get("accessHr") != null)
+				emp.setAccessHierarchy(empObj.get("accessHr").toString());
+			if (empObj.get("joinedDate") != null && empObj.get("joinedDate").toString().trim().length() > 0)
+				emp.setJoinedDate(sdf.parse(empObj.get("joinedDate").toString()));
+			if (empObj.get("photo") != null && empObj.get("photo").toString().trim().length() > 0)
 				emp.setPhoto(new String(empObj.get("photo").toString().trim()).getBytes());
 			Set<EmployeeDetails> empDetails = new HashSet<EmployeeDetails>();
+			if(emp.getEmployeeId()>0) {
+				entityManager.createQuery("delete from EmployeeDetails s where s.employee.employeeId="+emp.getEmployeeId()).executeUpdate();
+			}
 			JSONArray expList = (JSONArray) empObj.get("experienceDetails");
+			System.out.println("expList>>"+expList.toJSONString());
 			for (int k = 0; k < expList.size(); k++) {
 				JSONObject empData = (JSONObject) expList.get(k);
 				EmployeeDetails ed = new EmployeeDetails();
@@ -371,20 +381,25 @@ public class LoginDaoImpl implements LoginDaoIntf {
 				empDetails.add(ed);
 			}
 			emp.setEmployeeDetailsSet(empDetails);
-			entityManager.persist(emp);
+			entityManager.merge(emp);
+			if (emp.getAccessHierarchy() != null) {
+				emp.setAccessHierarchy(emp.getAccessHierarchy() + emp.getEmployeeId() + "@");
+				System.out.println("empid>>" + (emp.getAccessHierarchy() + emp.getEmployeeId() + "@"));
+			}
 			response.put("result", "success");
-		}catch (Exception e) {
+		} catch (Exception e) {
 			response.put("result", "fail");
 			e.printStackTrace();
 		}
 		return response;
 	}
+
 	@Override
 	public JSONObject employeeList(JSONObject empObj) {
 		JSONObject response = new JSONObject();
-		JSONArray employees=new JSONArray();
+		JSONArray employees = new JSONArray();
 		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+			SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-YYYY");
 			String hql = " from Employee e where e.ownerId=" + Integer.parseInt(empObj.get("ownerId").toString());
 			if (empObj.get("employeeCode") != null && empObj.get("employeeCode").toString().trim().length() > 0) {
 				hql += " and e.employeeCode='" + empObj.get("employeeCode").toString().trim() + "'";
@@ -398,6 +413,9 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			if (empObj.get("designation") != null && empObj.get("designation").toString().trim().length() > 0) {
 				hql += " and e.designation=" + Integer.parseInt(empObj.get("designation").toString().trim());
 			}
+			if (empObj.get("reportingTo") != null && empObj.get("reportingTo").toString().trim().length() > 0) {
+				hql += " and e.reportingTo=" + Integer.parseInt(empObj.get("reportingTo").toString().trim());
+			}
 			if (empObj.get("department") != null && empObj.get("department").toString().trim().length() > 0) {
 				hql += " and e.department.departmentId=" + Integer.parseInt(empObj.get("department").toString().trim());
 			}
@@ -407,9 +425,9 @@ public class LoginDaoImpl implements LoginDaoIntf {
 				qry.setMaxResults(Integer.parseInt(empObj.get("records").toString().trim()));
 			}
 			List<Employee> empList = qry.getResultList();
-			if(!empList.isEmpty()) {
-				for(Employee emp:empList) {
-					JSONObject obj=new JSONObject();
+			if (!empList.isEmpty()) {
+				for (Employee emp : empList) {
+					JSONObject obj = new JSONObject();
 					obj.put("employeeId", emp.getEmployeeId());
 					obj.put("employeeCode", emp.getEmployeeCode());
 					obj.put("employeeName", emp.getEmployeeName());
@@ -417,14 +435,15 @@ public class LoginDaoImpl implements LoginDaoIntf {
 					obj.put("designationId", emp.getDesignation());
 					obj.put("deptId", emp.getDepartment().getDepartmentId());
 					obj.put("deptName", emp.getDepartment().getDepartmentName());
-					obj.put("joinedDate", emp.getJoinedDate()!=null?sdf.format(emp.getJoinedDate()):"");
-					obj.put("photo", emp.getPhoto()!=null?new String(emp.getPhoto()):"");
+					obj.put("joinedDate", emp.getJoinedDate() != null ? sdf.format(emp.getJoinedDate()) : "");
+					obj.put("photo", emp.getPhoto() != null ? new String(emp.getPhoto()) : "");
 					obj.put("createdOn", sdf.format(emp.getCreatedDate()));
 					obj.put("createdBy", emp.getCreatedUser());
-					JSONArray expList= new JSONArray();
-					for(EmployeeDetails edt:emp.getEmployeeDetailsSet())
-					{
-						JSONObject ob=new JSONObject();
+					obj.put("reportingTo", emp.getReportingTo());
+					obj.put("accessHr", emp.getAccessHierarchy() != null ? emp.getAccessHierarchy() : "");
+					JSONArray expList = new JSONArray();
+					for (EmployeeDetails edt : emp.getEmployeeDetailsSet()) {
+						JSONObject ob = new JSONObject();
 						ob.put("empDetailsId", edt.getEmpDetailsId());
 						ob.put("institute", edt.getInstitute());
 						ob.put("startYear", sdf.format(edt.getStartYear()));
@@ -440,7 +459,7 @@ public class LoginDaoImpl implements LoginDaoIntf {
 			response.put("result", "fail");
 			e.printStackTrace();
 		}
-		response.put("employees",employees);
+		response.put("employees", employees);
 		return response;
 	}
 

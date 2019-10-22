@@ -39,8 +39,11 @@ public class Employee {
 	private Set<EmployeeDetails> employeeDetailsSet;
 	private Department department;
 	private String employeeType;
-    private byte[] photo;
-    private String status;
+	private byte[] photo;
+	private String status;
+	private int reportingTo;
+	private String accessHierarchy;
+
 	@Id
 	@SequenceGenerator(sequenceName = "seq_employee", allocationSize = 1, name = "seq_employee")
 	@GeneratedValue(generator = "seq_employee", strategy = GenerationType.SEQUENCE)
@@ -189,7 +192,7 @@ public class Employee {
 		this.experience = experience;
 	}
 
-	@OneToMany(cascade = CascadeType.PERSIST)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name = "EMPLOYEE_ID")
 	public Set<EmployeeDetails> getEmployeeDetailsSet() {
 		return employeeDetailsSet;
@@ -236,6 +239,23 @@ public class Employee {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+
+	@Column(name = "REPORTING_TO")
+	public int getReportingTo() {
+		return reportingTo;
+	}
+
+	public void setReportingTo(int reportingTo) {
+		this.reportingTo = reportingTo;
+	}
+
+	@Column(name = "ACCESS_HIERARCHY")
+	public String getAccessHierarchy() {
+		return accessHierarchy;
+	}
+
+	public void setAccessHierarchy(String accessHierarchy) {
+		this.accessHierarchy = accessHierarchy;
+	}
 
 }
