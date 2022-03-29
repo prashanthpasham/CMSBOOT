@@ -11,10 +11,14 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan(basePackages = {"com.prashanth.*"})
  @EntityScan(basePackages = {"com.prashanth.model"}) 
 @EnableJpaRepositories(basePackages = {"com.prashanth.dao"})
-public class CmsbootApplication {
+public class CmsbootApplication extends SpringBootServletInitializer{
 
 	public static void main(String[] args) {
 		SpringApplication.run(CmsbootApplication.class, args);
 	}
+	@Override
+  protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+    return builder.sources(CmsbootApplication.class);
+  }
 	
 }
