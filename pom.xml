@@ -17,6 +17,7 @@
         <packaging>war</packaging>
 	<properties>
 		<java.version>1.8</java.version>
+		<start-class>com.prashanth.CMSBOOT.CmsbootApplication</start-class>
 	</properties>
 
 	<dependencies>
